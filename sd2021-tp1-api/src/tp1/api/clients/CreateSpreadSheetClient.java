@@ -1,6 +1,7 @@
 package tp1.api.clients;
 
 import java.io.IOException;
+import java.util.HashSet;
 
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.Client;
@@ -15,7 +16,9 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 
 import tp1.api.Spreadsheet;
+import tp1.api.User;
 import tp1.api.service.rest.RestSpreadsheets;
+import tp1.api.service.rest.RestUsers;
 
 public class CreateSpreadSheetClient {
 
@@ -27,21 +30,21 @@ public class CreateSpreadSheetClient {
 
 	public static void main(String[] args) throws IOException {
 
-		if( args.length != 8) {
-			System.err.println( "Use: java sd2021.tp1.api.clients.CreateSpreadsheetClient url sheetId owner sheetURL lines columns sharedWith rawValues");
+		if( args.length != 6) {
+			System.err.println( "Use: java sd2021.tp1.api.clients.CreateSpreadsheetClient url owner lines columns rawValue password");
 			return;
 		}
 
 		String serverUrl = args[0];
-		String sheetId = args[1];
-		String owner = args[2];
-		String sheetURL = args[3];
-		String lines = args[4];
-		String columns = args[5];
-		String sharedWith = args[6];
-		String rawValues = args[7];
+		String owner = args[1];
+		int lines = Integer.parseInt(args[2]);
+		int columns = Integer.parseInt(args[3]);
+		String[][] rawValue = null; //= args[4];
+		String password = args[5];
+		String sheetId = owner + "-" + System.currentTimeMillis();
+		String sheetUrl = serverUrl + "/" + sheetId;
 		
-		Spreadsheet spreadsheet = new Spreadsheet(sheetId, owner, sheetURL, lines, columns, sharedWith, rawValues);
+		Spreadsheet s = new Spreadsheet(sheetId, owner, sheetUrl, lines, columns, new HashSet<>(), rawValue);
 
 		System.out.println("Sending request to server.");
 
@@ -52,7 +55,7 @@ public class CreateSpreadSheetClient {
 		config.property(ClientProperties.READ_TIMEOUT, REPLY_TIMEOUT);
 		Client client = ClientBuilder.newClient(config);
 
-		WebTarget target = client.target( serverUrl ).path( RestUsers.PATH );
+		WebTarget target = client.target( serverUrl ).path( RestSpreadsheets.PATH );
 
 		short retries = 0;
 		boolean success = false;
@@ -60,15 +63,26 @@ public class CreateSpreadSheetClient {
 		while(!success && retries < MAX_RETRIES) {
 
 			try {
-				Response r = target.request()
+				
+				WebTarget ownerTarget = client.target( serverUrl ).path( RestUsers.PATH );
+				
+				Response oR = ownerTarget.path(owner).queryParam("password", password).request()
 						.accept(MediaType.APPLICATION_JSON)
-						.post(Entity.entity(u, MediaType.APPLICATION_JSON));
+						.get();
+				
+				if( oR.getStatus() == Status.OK.getStatusCode() && oR.hasEntity() ) {
+					Response r = target.queryParam("password", password).request()
+							.accept(MediaType.APPLICATION_JSON)
+							.post(Entity.entity(s, MediaType.APPLICATION_JSON));
 
-				if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity() )
-					System.out.println("Success, created user with id: " + r.readEntity(String.class) );
-				else
-					System.out.println("Error, HTTP error status: " + r.getStatus() );
-				success = true;
+					if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity() )
+						System.out.println("Success, created spreadsheet with id: " + r.readEntity(String.class) );
+					else
+						System.out.println("Error, HTTP error status: " + r.getStatus() );
+					success = true;
+				} else
+					System.out.println("Error, HTTP error status: " + oR.getStatus() );
+
 			} catch (ProcessingException pe) {
 				System.out.println("Timeout occurred");
 				pe.printStackTrace();
