@@ -27,18 +27,21 @@ public class CreateSpreadSheetClient {
 
 	public static void main(String[] args) throws IOException {
 
-		if( args.length != 5) {
-			System.err.println( "Use: java sd2021.aula2.clients.CreateUserClient url userId fullName email password");
+		if( args.length != 8) {
+			System.err.println( "Use: java sd2021.tp1.api.clients.CreateSpreadsheetClient url sheetId owner sheetURL lines columns sharedWith rawValues");
 			return;
 		}
 
 		String serverUrl = args[0];
-		String userId = args[1];
-		String fullName = args[2];
-		String email = args[3];
-		String password = args[4];
-
-		User u = new User( userId, fullName, email, password);
+		String sheetId = args[1];
+		String owner = args[2];
+		String sheetURL = args[3];
+		String lines = args[4];
+		String columns = args[5];
+		String sharedWith = args[6];
+		String rawValues = args[7];
+		
+		Spreadsheet spreadsheet = new Spreadsheet(sheetId, owner, sheetURL, lines, columns, sharedWith, rawValues);
 
 		System.out.println("Sending request to server.");
 
