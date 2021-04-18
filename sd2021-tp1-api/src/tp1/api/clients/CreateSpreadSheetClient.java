@@ -19,6 +19,7 @@ import tp1.api.Spreadsheet;
 import tp1.api.User;
 import tp1.api.service.rest.RestSpreadsheets;
 import tp1.api.service.rest.RestUsers;
+import tp1.discovery.Discovery;
 
 public class CreateSpreadSheetClient {
 
@@ -34,7 +35,7 @@ public class CreateSpreadSheetClient {
 			System.err.println( "Use: java sd2021.tp1.api.clients.CreateSpreadsheetClient url owner lines columns rawValue password");
 			return;
 		}
-
+		
 		String serverUrl = args[0];
 		String owner = args[1];
 		int lines = Integer.parseInt(args[2]);
