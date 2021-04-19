@@ -11,9 +11,9 @@ import org.glassfish.jersey.server.ResourceConfig;
 import tp1.servers.resources.SpreadSheetResource;
 import tp1.discovery.Discovery;
 
-public class SpreadSheetsServer {
+public class SheetsServer {
 
-	private static Logger Log = Logger.getLogger(SpreadSheetsServer.class.getName());
+	private static Logger Log = Logger.getLogger(SheetsServer.class.getName());
 
 	static {
 		System.setProperty("java.net.preferIPv4Stack", "true");
@@ -21,21 +21,24 @@ public class SpreadSheetsServer {
 	}
 	
 	public static final int PORT = 8080;
-	public static final String SERVICE = "SpreadSheetsServer";
+	public static final String SERVICE = "sheets";
 	
 	public static void main(String[] args) {
 		try {
 		String ip = InetAddress.getLocalHost().getHostAddress();
 		
-		Discovery discovery = new Discovery( new InetSocketAddress("226.226.226.226", 2266), SERVICE, "http://" + ip);
-		discovery.start();
-			
-		ResourceConfig config = new ResourceConfig();
-		config.register(SpreadSheetResource.class);
-
 		String serverURI = String.format("http://%s:%s/rest", ip, PORT);
+
+		ResourceConfig config = new ResourceConfig();
+		
+		SpreadSheetResource s = new SpreadSheetResource(ip);
+		config.register(s);
+		
 		JdkHttpServerFactory.createHttpServer( URI.create(serverURI), config);
-	
+		
+		Discovery discovery = new Discovery( new InetSocketAddress("226.226.226.226", 2266), ip+":"+SERVICE, serverURI);
+		discovery.start();
+		
 		Log.info(String.format("%s Server ready @ %s\n",  SERVICE, serverURI));
 		
 		//More code can be executed here...

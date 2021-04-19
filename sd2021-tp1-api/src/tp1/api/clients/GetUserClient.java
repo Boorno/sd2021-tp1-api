@@ -22,46 +22,35 @@ public class GetUserClient {
 	public final static int CONNECTION_TIMEOUT = 1000;
 	public final static int REPLY_TIMEOUT = 600;
 
-	public static void main(String[] args) throws IOException {
+	private String serverUrl;
+	private String userId;
+	private String password;
 
-		if( args.length != 3) {
-			System.err.println( "Use: java sd2021.aula2.clients.GetUserClient url userId password");
-			return;
-		}
+	public GetUserClient(String serverUrl, String userId, String password) {
+		this.serverUrl = serverUrl;
+		this.userId = userId;
+		this.password = password;
+	}
 
-		String serverUrl = args[0];
-		String userId = args[1];
-		String password = args[2];
-
-		System.out.println("Sending request to server.");
-
+	public int getUser() {
+		
 		ClientConfig config = new ClientConfig();
-		//how much time until we timeout when opening the TCP connection to the server
 		config.property(ClientProperties.CONNECT_TIMEOUT, CONNECTION_TIMEOUT);
-		//how much time do we wait for the reply of the server after sending the request
 		config.property(ClientProperties.READ_TIMEOUT, REPLY_TIMEOUT);
 		Client client = ClientBuilder.newClient(config);
 
 		WebTarget target = client.target( serverUrl ).path( RestUsers.PATH );
 
 		short retries = 0;
-		boolean success = false;
 
-		while(!success && retries < MAX_RETRIES) {
+		while(retries < MAX_RETRIES) {
 			
 			try {
 			Response r = target.path( userId).queryParam("password", password).request()
 					.accept(MediaType.APPLICATION_JSON)
 					.get();
 
-			if( r.getStatus() == Status.OK.getStatusCode() && r.hasEntity() ) {
-				System.out.println("Success:");
-				User u = r.readEntity(User.class);
-				System.out.println( "User : " + u);
-			} else
-				System.out.println("Error, HTTP error status: " + r.getStatus() );
-			
-			success = true;
+			return r.getStatus();
 			} catch (ProcessingException pe) {
 				System.out.println("Timeout occurred");
 				pe.printStackTrace();
@@ -72,6 +61,8 @@ public class GetUserClient {
 				System.out.println("Retrying to execute request.");
 			}
 		}
+		
+		return Status.BAD_GATEWAY.getStatusCode();
 
 	}
 

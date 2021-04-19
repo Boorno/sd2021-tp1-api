@@ -26,11 +26,10 @@ public class UsersResource implements RestUsers {
 	public String createUser(User user) {
 		Log.info("createUser : " + user);
 
-		// Check if user is valid, if not return HTTP CONFLICT (409)
 		if (user.getUserId() == null || user.getPassword() == null || user.getFullName() == null
 				|| user.getEmail() == null) {
 			Log.info("User object invalid.");
-			throw new WebApplicationException(Status.CONFLICT);
+			throw new WebApplicationException(Status.BAD_REQUEST);
 		}
 
 		synchronized (this) {
@@ -40,7 +39,7 @@ public class UsersResource implements RestUsers {
 				Log.info("User already exists.");
 				throw new WebApplicationException(Status.CONFLICT);
 			}
-
+			
 			// Add the user to the map of users
 			users.put(user.getUserId(), user);
 
@@ -52,12 +51,6 @@ public class UsersResource implements RestUsers {
 	@Override
 	public User getUser(String userId, String password) {
 		Log.info("getUser : user = " + userId + "; pwd = " + password);
-
-		// Check if user is valid, if not return HTTP CONFLICT (409)
-		if (userId == null || password == null) {
-			Log.info("UserId or passwrod null.");
-			throw new WebApplicationException(Status.CONFLICT);
-		}
 
 		User user = null;
 
@@ -83,45 +76,38 @@ public class UsersResource implements RestUsers {
 	@Override
 	public User updateUser(String userId, String password, User user) {
 		Log.info("updateUser : user = " + userId + "; pwd = " + password + " ; user = " + user);
-		if (userId == null || password == null) {
-			Log.info("UserId or passwrod null.");
-			throw new WebApplicationException(Status.CONFLICT);
-		}
-		if (user.getUserId() == null || user.getPassword() == null || user.getFullName() == null
-				|| user.getEmail() == null) {
-			Log.info("User object invalid.");
-			throw new WebApplicationException(Status.CONFLICT);
-		}
+		
+		User svUser = null;
 
 		synchronized (this) {
 
-			User svUser = users.get(userId);
+			svUser = users.get(userId);
 
 			if (svUser == null) {
 				Log.info("User does not exist.");
-				throw new WebApplicationException(Status.FORBIDDEN);
+				throw new WebApplicationException(Status.NOT_FOUND);
 			}
 
 			if (!svUser.getPassword().equals(password)) {
 				Log.info("Password is incorrect.");
 				throw new WebApplicationException(Status.FORBIDDEN);
 			}
-
-			users.put(userId, user);
+			
+			if(user.getEmail() != null) svUser.setEmail(user.getEmail());
+			if(user.getFullName() != null) svUser.setFullName(user.getFullName());
+			if(user.getPassword() != null) svUser.setPassword(user.getPassword());
+			
+			users.put(userId, svUser);
 
 		}
 
-		return user;
+		return svUser;
 	}
 
 	@Override
 	public User deleteUser(String userId, String password) {
 		Log.info("deleteUser : user = " + userId + "; pwd = " + password);
-		if (userId == null || password == null) {
-			Log.info("UserId or passwrod null.");
-			throw new WebApplicationException(Status.CONFLICT);
-		}
-
+		
 		synchronized (this) {
 
 			User user = users.get(userId);
@@ -129,7 +115,7 @@ public class UsersResource implements RestUsers {
 			// Check if user exists
 			if (user == null) {
 				Log.info("User does not exist.");
-				throw new WebApplicationException(Status.FORBIDDEN);
+				throw new WebApplicationException(Status.NOT_FOUND);
 			}
 
 			// Check if the password is correct
@@ -157,7 +143,7 @@ public class UsersResource implements RestUsers {
 
 		synchronized (this) {
 			for (User u : users.values()) {
-				if (u.getFullName().contains(pattern))
+				if (u.getFullName().toLowerCase().contains(pattern.toLowerCase()))
 					sUsers.add(u);
 			}
 		}

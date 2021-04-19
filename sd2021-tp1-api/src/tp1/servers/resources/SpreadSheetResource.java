@@ -1,5 +1,6 @@
 package tp1.servers.resources;
 
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,7 +12,9 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response.Status;
 import tp1.api.Spreadsheet;
 import tp1.api.User;
+import tp1.api.clients.GetUserClient;
 import tp1.api.service.rest.RestSpreadsheets;
+import tp1.discovery.Discovery;
 
 @Singleton
 public class SpreadSheetResource implements RestSpreadsheets {
@@ -20,30 +23,66 @@ public class SpreadSheetResource implements RestSpreadsheets {
 
 	private static Logger Log = Logger.getLogger(UsersResource.class.getName());
 
+	private String domain;
+
+	private Discovery discovery;
+
 	public SpreadSheetResource() {
+	}
+
+	public SpreadSheetResource(String domain) {
+		this.domain = domain;
+		this.discovery = new Discovery(new InetSocketAddress("226.226.226.226", 2266));
+		this.discovery.resourceStart();
 	}
 
 	@Override
 	public String createSpreadsheet(Spreadsheet sheet, String password) {
-		Log.info("createSheet : " + sheet+ "; pwd = " + password);
-		if (password == null) {
-			Log.info("Passwrod null.");
-			throw new WebApplicationException(Status.BAD_REQUEST);
-		}
+		Log.info("createSheet : " + sheet + "; pwd = " + password);
+		
+		System.out.println("ETAPA1");
 
 		if (sheet.getOwner() == null || sheet.getRows() == 0 || sheet.getColumns() == 0) {
 			Log.info("Sheet object invalid.");
 			throw new WebApplicationException(Status.BAD_REQUEST);
 		}
+		
+		System.out.println("ETAPA2");
 
-		synchronized (this) {
+		String usersURL = discovery.knownUrisOf(domain + ":users")[0].toString();
 
-			if (sheets.containsKey(sheet.getSheetId())) {
-				Log.info("Sheet already exists.");
-				throw new WebApplicationException(Status.BAD_REQUEST);
+		System.out.println("ETAPA3");
+		
+		GetUserClient getuser = new GetUserClient(usersURL, sheet.getOwner(), password);
+		
+		System.out.println("ETAPA4");
+
+		int responseStatus = getuser.getUser();
+		
+		System.out.println("ETAPA5");
+
+		if (responseStatus == Status.OK.getStatusCode()) {
+			synchronized (this) {
+				if (sheets.containsKey(sheet.getSheetId())) {
+					Log.info("Sheet already exists.");
+					throw new WebApplicationException(Status.BAD_REQUEST);
+				}
+
+				String sheetId = sheet.getOwner() + "-" + System.currentTimeMillis();
+				sheet.setSheetId(sheetId);
+				sheet.setSheetURL(usersURL + "/" + sheetId);
+
+				sheets.put(sheet.getSheetId(), sheet);
 			}
+		} else {
 
-			sheets.put(sheet.getSheetId(), sheet);
+			if (responseStatus == Status.FORBIDDEN.getStatusCode())
+				Log.info("Password incorrect.");
+
+			if (responseStatus == Status.NOT_FOUND.getStatusCode())
+				Log.info("No user exists with id: " + sheet.getOwner());
+
+			throw new WebApplicationException(Status.BAD_REQUEST);
 
 		}
 
@@ -69,10 +108,10 @@ public class SpreadSheetResource implements RestSpreadsheets {
 			}
 
 			// Check if the password is correct
-			if (!sheet.getPassword().equals(password)) {
-				Log.info("Password is incorrect.");
-				throw new WebApplicationException(Status.FORBIDDEN);
-			}
+//			if (!sheet.getPassword().equals(password)) {
+//				Log.info("Password is incorrect.");
+//				throw new WebApplicationException(Status.FORBIDDEN);
+//			}
 
 			sheets.remove(sheetId);
 		}
