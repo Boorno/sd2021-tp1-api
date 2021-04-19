@@ -26,14 +26,16 @@ public class UsersServer {
 	public static void main(String[] args) {
 		try {
 		String ip = InetAddress.getLocalHost().getHostAddress();
-			
+		
+		String domain = args[0];
+					
 		ResourceConfig config = new ResourceConfig();
 		config.register(UsersResource.class);
 
 		String serverURI = String.format("http://%s:%s/rest", ip, PORT);
 		JdkHttpServerFactory.createHttpServer( URI.create(serverURI), config);
 		
-		Discovery discovery = new Discovery( new InetSocketAddress("226.226.226.226", 2266), ip+":"+SERVICE, serverURI);
+		Discovery discovery = new Discovery( new InetSocketAddress("226.226.226.226", 2266), domain+":"+SERVICE, serverURI);
 		discovery.start();
 	
 		Log.info(String.format("%s Server ready @ %s\n",  SERVICE, serverURI));

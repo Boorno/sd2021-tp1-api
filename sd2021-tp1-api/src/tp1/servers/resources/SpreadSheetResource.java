@@ -1,9 +1,8 @@
 package tp1.servers.resources;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -11,7 +10,6 @@ import jakarta.inject.Singleton;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response.Status;
 import tp1.api.Spreadsheet;
-import tp1.api.User;
 import tp1.api.clients.GetUserClient;
 import tp1.api.service.rest.RestSpreadsheets;
 import tp1.discovery.Discovery;
@@ -24,43 +22,54 @@ public class SpreadSheetResource implements RestSpreadsheets {
 	private static Logger Log = Logger.getLogger(UsersResource.class.getName());
 
 	private String domain;
+	
+	private String serverURI;
 
 	private Discovery discovery;
 
 	public SpreadSheetResource() {
 	}
 
-	public SpreadSheetResource(String domain) {
+	public SpreadSheetResource(String domain, String serverURI) {
 		this.domain = domain;
+		this.serverURI = serverURI;
 		this.discovery = new Discovery(new InetSocketAddress("226.226.226.226", 2266));
 		this.discovery.resourceStart();
+	}
+	
+	private String getUserURI() {
+		String usersURI;
+		while(true) {
+			URI[] usersURIs = discovery.knownUrisOf(domain + ":users");
+			if (usersURIs != null) {
+				usersURI = usersURIs[0].toString();
+				break;
+			}
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return usersURI;
 	}
 
 	@Override
 	public String createSpreadsheet(Spreadsheet sheet, String password) {
 		Log.info("createSheet : " + sheet + "; pwd = " + password);
 		
-		System.out.println("ETAPA1");
-
-		if (sheet.getOwner() == null || sheet.getRows() == 0 || sheet.getColumns() == 0) {
+		if (sheet.getOwner() == null || sheet.getRows() <= 0 || sheet.getColumns() <= 0) {
 			Log.info("Sheet object invalid.");
 			throw new WebApplicationException(Status.BAD_REQUEST);
 		}
 		
-		System.out.println("ETAPA2");
-
-		String usersURL = discovery.knownUrisOf(domain + ":users")[0].toString();
-
-		System.out.println("ETAPA3");
+		String usersURI = getUserURI();
+				
+		GetUserClient getuser = new GetUserClient(usersURI, sheet.getOwner(), password);
 		
-		GetUserClient getuser = new GetUserClient(usersURL, sheet.getOwner(), password);
-		
-		System.out.println("ETAPA4");
-
 		int responseStatus = getuser.getUser();
 		
-		System.out.println("ETAPA5");
-
 		if (responseStatus == Status.OK.getStatusCode()) {
 			synchronized (this) {
 				if (sheets.containsKey(sheet.getSheetId())) {
@@ -70,7 +79,7 @@ public class SpreadSheetResource implements RestSpreadsheets {
 
 				String sheetId = sheet.getOwner() + "-" + System.currentTimeMillis();
 				sheet.setSheetId(sheetId);
-				sheet.setSheetURL(usersURL + "/" + sheetId);
+				sheet.setSheetURL(serverURI + "/" + sheetId);
 
 				sheets.put(sheet.getSheetId(), sheet);
 			}
@@ -119,8 +128,45 @@ public class SpreadSheetResource implements RestSpreadsheets {
 
 	@Override
 	public Spreadsheet getSpreadsheet(String sheetId, String userId, String password) {
-		// TODO Auto-generated method stub
-		return null;
+		
+		String usersURI = getUserURI();
+		
+		GetUserClient getuser = new GetUserClient(usersURI, userId, password);
+		
+		int responseStatus = getuser.getUser();
+		
+		if (responseStatus == Status.NOT_FOUND.getStatusCode()) {
+			Log.info("No user exists with id: " + userId);
+			throw new WebApplicationException(Status.NOT_FOUND);
+		}
+		
+		if (responseStatus == Status.FORBIDDEN.getStatusCode()) {
+			Log.info("Password incorrect.");
+			throw new WebApplicationException(Status.FORBIDDEN);
+		}
+		
+		Spreadsheet sheet = null;
+		
+		if (responseStatus == Status.OK.getStatusCode()) {
+			synchronized (this) {
+				sheet = sheets.get(sheetId);
+				
+				if (sheet == null){
+					Log.info("Sheet does not exist.");
+					throw new WebApplicationException(Status.NOT_FOUND);
+				}
+				
+				if (!sheet.getOwner().equals(userId) && !sheet.getSharedWith().contains(userId)) {
+					throw new WebApplicationException(Status.FORBIDDEN);
+				}
+			}
+		} else {
+			
+			throw new WebApplicationException(Status.BAD_REQUEST);
+
+		}
+		
+		return sheet;
 	}
 
 	@Override

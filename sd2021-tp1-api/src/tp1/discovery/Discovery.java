@@ -10,6 +10,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -199,7 +200,12 @@ public class Discovery {
 	 * 
 	 */
 	public URI[] knownUrisOf(String serviceName) {
-		return (URI[]) uriMap.get(serviceName).toArray();
+		List<URI> uriList = uriMap.get(serviceName);
+		if(uriList == null)
+			return null;
+		URI[] urisArray = new URI[uriList.size()];
+        urisArray = uriList.toArray(urisArray);
+		return urisArray;
 	}
 
 }

@@ -28,15 +28,15 @@ public class SheetsServer {
 		String ip = InetAddress.getLocalHost().getHostAddress();
 		
 		String serverURI = String.format("http://%s:%s/rest", ip, PORT);
-
-		ResourceConfig config = new ResourceConfig();
 		
-		SpreadSheetResource s = new SpreadSheetResource(ip);
-		config.register(s);
+		String domain = args[0];
+		
+		ResourceConfig config = new ResourceConfig();
+		config.register(new SpreadSheetResource(domain, serverURI));
 		
 		JdkHttpServerFactory.createHttpServer( URI.create(serverURI), config);
 		
-		Discovery discovery = new Discovery( new InetSocketAddress("226.226.226.226", 2266), ip+":"+SERVICE, serverURI);
+		Discovery discovery = new Discovery( new InetSocketAddress("226.226.226.226", 2266), domain+":"+SERVICE, serverURI);
 		discovery.start();
 		
 		Log.info(String.format("%s Server ready @ %s\n",  SERVICE, serverURI));
