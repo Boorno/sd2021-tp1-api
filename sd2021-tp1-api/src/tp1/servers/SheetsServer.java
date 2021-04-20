@@ -32,12 +32,13 @@ public class SheetsServer {
 		String domain = args[0];
 		
 		ResourceConfig config = new ResourceConfig();
-		config.register(new SpreadSheetResource(domain, serverURI));
-		
-		JdkHttpServerFactory.createHttpServer( URI.create(serverURI), config);
 		
 		Discovery discovery = new Discovery( new InetSocketAddress("226.226.226.226", 2266), domain+":"+SERVICE, serverURI);
 		discovery.start();
+		
+		config.register(new SpreadSheetResource(domain, serverURI, discovery));
+		
+		JdkHttpServerFactory.createHttpServer( URI.create(serverURI), config);
 		
 		Log.info(String.format("%s Server ready @ %s\n",  SERVICE, serverURI));
 		

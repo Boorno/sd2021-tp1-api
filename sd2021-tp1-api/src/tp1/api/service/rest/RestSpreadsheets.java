@@ -144,4 +144,12 @@ public interface RestSpreadsheets {
 	@Path("/{sheetId}/share/{userId}")
 	void unshareSpreadsheet( @PathParam("sheetId") String sheetId, @PathParam("userId") String userId, 
 			@QueryParam("password") String password);
+	
+	@DELETE
+	@Path("/deletedUser/{userId}")
+	void deletedUser(@PathParam("userId") String userId);
+	
+	@GET
+	@Path("/import/{sheetId}")
+	void importRanges(@PathParam("sheetId") String sheetId);
 }

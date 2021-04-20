@@ -1,5 +1,7 @@
 package tp1.servers.resources;
 
+import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,7 +12,10 @@ import jakarta.inject.Singleton;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response.Status;
 import tp1.api.User;
+import tp1.api.clients.DeleteUserSheetsClient;
+import tp1.api.clients.GetUserClient;
 import tp1.api.service.rest.RestUsers;
+import tp1.discovery.Discovery;
 
 @Singleton
 public class UsersResource implements RestUsers {
@@ -18,8 +23,35 @@ public class UsersResource implements RestUsers {
 	private final Map<String, User> users = new HashMap<String, User>();
 
 	private static Logger Log = Logger.getLogger(UsersResource.class.getName());
+	
+	private String domain;
+
+	private Discovery discovery;
 
 	public UsersResource() {
+	}
+	
+	public UsersResource(String domain, Discovery d) {
+		this.domain = domain;
+		this.discovery = d;
+	}
+	
+	private String getSheetURI() {
+		String sheetsURI;
+		while (true) {
+			URI[] sheetURIs = discovery.knownUrisOf(domain + ":sheets");
+			if (sheetURIs != null) {
+				sheetsURI = sheetURIs[0].toString();
+				break;
+			}
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return sheetsURI;
 	}
 
 	@Override
@@ -69,7 +101,7 @@ public class UsersResource implements RestUsers {
 			Log.info("Password is incorrect.");
 			throw new WebApplicationException(Status.FORBIDDEN);
 		}
-
+		
 		return user;
 	}
 
@@ -97,8 +129,6 @@ public class UsersResource implements RestUsers {
 			if(user.getFullName() != null) svUser.setFullName(user.getFullName());
 			if(user.getPassword() != null) svUser.setPassword(user.getPassword());
 			
-			users.put(userId, svUser);
-
 		}
 
 		return svUser;
@@ -107,6 +137,10 @@ public class UsersResource implements RestUsers {
 	@Override
 	public User deleteUser(String userId, String password) {
 		Log.info("deleteUser : user = " + userId + "; pwd = " + password);
+		
+		String sheetsURI = getSheetURI();
+
+		DeleteUserSheetsClient deluser = new DeleteUserSheetsClient(sheetsURI, userId);
 		
 		synchronized (this) {
 
@@ -126,6 +160,8 @@ public class UsersResource implements RestUsers {
 
 			users.remove(userId);
 
+			deluser.deleteUserSheets();
+			
 			return user;
 		}
 

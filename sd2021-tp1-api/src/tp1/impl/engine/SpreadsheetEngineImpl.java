@@ -44,7 +44,9 @@ String[][] values = SpreadsheetEngineImpl.getInstance().computeSpreadsheetValues
 
 	@Override
 	public String[][] getRangeValues(String sheetURL, String range) {
-		// get remote range values
+		String[] sheetInfo = sheetURL.split("/"+PATH+"/");
+		String[] rangeInfo = range.split(":");
+		String[][] cells = new String[][sheet.columns()];
 	});
 */
 public class SpreadsheetEngineImpl implements SpreadsheetEngine {
