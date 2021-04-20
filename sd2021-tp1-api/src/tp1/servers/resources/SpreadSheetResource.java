@@ -14,6 +14,7 @@ import jakarta.ws.rs.core.Response.Status;
 import tp1.api.Spreadsheet;
 import tp1.api.clients.GetUserClient;
 import tp1.api.engine.AbstractSpreadsheet;
+import tp1.api.engine.SpreadSheetImpl;
 import tp1.api.service.rest.RestSpreadsheets;
 import tp1.discovery.Discovery;
 import tp1.impl.engine.SpreadsheetEngineImpl;
@@ -209,39 +210,7 @@ public class SpreadSheetResource implements RestSpreadsheets {
 					throw new WebApplicationException(Status.FORBIDDEN);
 				}
 
-				final Spreadsheet auxSheet = sheet;
-
-				String[][] values = SpreadsheetEngineImpl.getInstance()
-						.computeSpreadsheetValues(new AbstractSpreadsheet() {
-							@Override
-							public int rows() {
-								return auxSheet.getRows();
-							}
-
-							@Override
-							public int columns() {
-								return auxSheet.getColumns();
-							}
-
-							@Override
-							public String sheetId() {
-								return auxSheet.getSheetId();
-							}
-
-							@Override
-							public String cellRawValue(int row, int col) {
-								try {
-									return auxSheet.getRawValues()[row][col];
-								} catch (IndexOutOfBoundsException e) {
-									return "#ERROR?";
-								}
-							}
-
-							@Override
-							public String[][] getRangeValues(String sheetURL, String range) {
-								return null;
-							}
-						});
+				String[][] values = SpreadsheetEngineImpl.getInstance().computeSpreadsheetValues(new SpreadSheetImpl(sheet));
 
 				return values;
 			}
@@ -394,8 +363,16 @@ public class SpreadSheetResource implements RestSpreadsheets {
 	}
 
 	@Override
-	public void importRanges(String sheetId) {
-		
+	public Spreadsheet importRanges(String sheetId) {
+		synchronized (this) {
+			Spreadsheet sheet = sheets.get(sheetId);
+			
+			if(sheet == null)
+				throw new WebApplicationException(Status.NOT_FOUND);
+			
+			System.out.println("\nKPAEFINS9OUIHFWEIUFB\n");
+			return sheet;
+		}
 	}
 
 }

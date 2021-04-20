@@ -151,5 +151,5 @@ public interface RestSpreadsheets {
 	
 	@GET
 	@Path("/import/{sheetId}")
-	void importRanges(@PathParam("sheetId") String sheetId);
+	Spreadsheet importRanges(@PathParam("sheetId") String sheetId);
 }
