@@ -41,7 +41,7 @@ public class SpreadSheetResource implements RestSpreadsheets {
 		this.discovery = d;
 	}
 
-	private String getUserURI() {
+	private String getUserURI(String domain) {
 		String usersURI;
 		while (true) {
 			URI[] usersURIs = discovery.knownUrisOf(domain + ":users");
@@ -68,7 +68,7 @@ public class SpreadSheetResource implements RestSpreadsheets {
 			throw new WebApplicationException(Status.BAD_REQUEST);
 		}
 
-		String usersURI = getUserURI();
+		String usersURI = getUserURI(domain);
 
 		GetUserClient getuser = new GetUserClient(usersURI, sheet.getOwner(), password);
 
@@ -83,7 +83,7 @@ public class SpreadSheetResource implements RestSpreadsheets {
 
 			String sheetId = sheet.getOwner() + "-" + System.currentTimeMillis();
 			sheet.setSheetId(sheetId);
-			sheet.setSheetURL(serverURI + "/" + PATH + "/" + sheetId);
+			sheet.setSheetURL(serverURI + PATH + "/" + sheetId);
 			synchronized (this) {
 				sheets.put(sheet.getSheetId(), sheet);
 			}
@@ -115,7 +115,7 @@ public class SpreadSheetResource implements RestSpreadsheets {
 				throw new WebApplicationException(Status.NOT_FOUND);
 			}
 
-			String usersURI = getUserURI();
+			String usersURI = getUserURI(domain);
 
 			GetUserClient getuser = new GetUserClient(usersURI, sheet.getOwner(), password);
 
@@ -135,7 +135,7 @@ public class SpreadSheetResource implements RestSpreadsheets {
 	@Override
 	public Spreadsheet getSpreadsheet(String sheetId, String userId, String password) {
 
-		String usersURI = getUserURI();
+		String usersURI = getUserURI(domain);
 
 		GetUserClient getuser = new GetUserClient(usersURI, userId, password);
 
@@ -178,7 +178,7 @@ public class SpreadSheetResource implements RestSpreadsheets {
 
 	@Override
 	public String[][] getSpreadsheetValues(String sheetId, String userId, String password) {
-		String usersURI = getUserURI();
+		String usersURI = getUserURI(domain);
 
 		GetUserClient getuser = new GetUserClient(usersURI, userId, password);
 
@@ -225,7 +225,7 @@ public class SpreadSheetResource implements RestSpreadsheets {
 	public void updateCell(String sheetId, String cell, String rawValue, String userId, String password) {
 		Log.info("updateCell : sheet = " + sheetId + "; pwd = " + password);
 
-		String usersURI = getUserURI();
+		String usersURI = getUserURI(domain);
 
 		GetUserClient getuser = new GetUserClient(usersURI, userId, password);
 
@@ -263,9 +263,11 @@ public class SpreadSheetResource implements RestSpreadsheets {
 	@Override
 	public void shareSpreadsheet(String sheetId, String userId, String password) {
 
-		String usersURI = getUserURI();
+		String[] tokens = userId.split("@");
+				
+		String usersURI = getUserURI(tokens[1]);
 
-		String uId = userId.split("@")[0];
+		String uId = tokens[0];
 
 		GetUserClient getuser = new GetUserClient(usersURI, uId, "");
 
@@ -284,7 +286,7 @@ public class SpreadSheetResource implements RestSpreadsheets {
 				throw new WebApplicationException(Status.NOT_FOUND);
 			}
 
-			getuser = new GetUserClient(usersURI, sheet.getOwner(), password);
+			getuser = new GetUserClient(getUserURI(domain), sheet.getOwner(), password);
 
 			responseStatus = getuser.getUser();
 
@@ -310,9 +312,12 @@ public class SpreadSheetResource implements RestSpreadsheets {
 
 	@Override
 	public void unshareSpreadsheet(String sheetId, String userId, String password) {
-		String usersURI = getUserURI();
+		
+		String[] tokens = userId.split("@");
+		
+		String usersURI = getUserURI(tokens[1]);
 
-		String uId = userId.split("@")[0];
+		String uId = tokens[0];
 
 		GetUserClient getuser = new GetUserClient(usersURI, uId, "");
 
@@ -331,7 +336,7 @@ public class SpreadSheetResource implements RestSpreadsheets {
 				throw new WebApplicationException(Status.NOT_FOUND);
 			}
 
-			getuser = new GetUserClient(usersURI, sheet.getOwner(), password);
+			getuser = new GetUserClient(getUserURI(domain), sheet.getOwner(), password);
 
 			responseStatus = getuser.getUser();
 
@@ -339,16 +344,16 @@ public class SpreadSheetResource implements RestSpreadsheets {
 				Log.info("Password incorrect.");
 				throw new WebApplicationException(Status.FORBIDDEN);
 			} else if (responseStatus == Status.OK.getStatusCode()) {
-
+				Set<String> sW = sheet.getSharedWith();
+				
 				if (!sheet.getSharedWith().contains(userId))
 					throw new WebApplicationException(Status.NOT_FOUND);
 
-				Set<String> sW = sheet.getSharedWith();
 				sW.remove(userId);
 				sheet.setSharedWith(sW);
 
 			} else {
-
+				
 				throw new WebApplicationException(Status.BAD_REQUEST);
 
 			}
@@ -363,16 +368,14 @@ public class SpreadSheetResource implements RestSpreadsheets {
 	}
 
 	@Override
-	public Spreadsheet importRanges(String sheetId) {
-		synchronized (this) {
-			Spreadsheet sheet = sheets.get(sheetId);
-			
-			if(sheet == null)
-				throw new WebApplicationException(Status.NOT_FOUND);
-			
-			System.out.println("\nKPAEFINS9OUIHFWEIUFB\n");
-			return sheet;
-		}
+	public String[][] importRanges(String sheetId) {
+		Spreadsheet sheet = sheets.get(sheetId);
+		if(sheet == null)
+			throw new WebApplicationException(Status.NOT_FOUND);
+		
+		String[][] values = SpreadsheetEngineImpl.getInstance().computeSpreadsheetValues(new SpreadSheetImpl(sheet));
+
+		return values;
 	}
 
 }

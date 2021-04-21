@@ -151,5 +151,6 @@ public interface RestSpreadsheets {
 	
 	@GET
 	@Path("/import/{sheetId}")
-	Spreadsheet importRanges(@PathParam("sheetId") String sheetId);
+	@Produces(MediaType.APPLICATION_JSON)
+	String[][] importRanges(@PathParam("sheetId") String sheetId);
 }

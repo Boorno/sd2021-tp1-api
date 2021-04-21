@@ -1,6 +1,5 @@
 package tp1.api.clients;
 
-import java.io.IOException;
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -13,9 +12,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
 
 import tp1.api.Spreadsheet;
-import tp1.api.User;
 import tp1.api.service.rest.RestSpreadsheets;
-import tp1.api.service.rest.RestUsers;
 
 public class GetValuesClient {
 
@@ -42,18 +39,29 @@ public class GetValuesClient {
 		WebTarget target = client.target(serverUrl).path(RestSpreadsheets.PATH);
 
 		short retries = 0;
-
-		while (retries < MAX_RETRIES) {
+		
+		boolean success = false;
+		
+		while (!success && retries < MAX_RETRIES) {
 
 			try {
-				Response r = target.path("import/" + sheetId).request().accept(MediaType.APPLICATION_JSON).get();
-
-				Spreadsheet s = null;
-
+				
+				System.out.println(target.path("import/" + sheetId));
+				
+				Response r = target.path("import/" + sheetId)
+						.request()
+						.accept(MediaType.APPLICATION_JSON)
+						.get();
+				
+				System.out.println(target.path("import/" + sheetId));
+				
 				if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
-					s = r.readEntity(Spreadsheet.class);
-					return s.getRawValues();
-				}
+					String[][] s = r.readEntity(String[][].class);
+					return s;
+				} else
+					System.out.println("Error, HTTP error status: " + r.getStatus() );
+				
+				success = true;
 			} catch (ProcessingException pe) {
 				System.out.println("Timeout occurred");
 				pe.printStackTrace();

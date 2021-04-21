@@ -45,9 +45,10 @@ public class SpreadSheetImpl implements AbstractSpreadsheet{
 		
 		System.out.println(sheetInfo[0]);
 		System.out.println(sheetInfo[1]);
-				
+		System.out.println(sheetURL);
+		
 		GetValuesClient g = new GetValuesClient(sheetInfo[0], sheetInfo[1]);
-				
+						
 		return c.extractRangeValuesFrom(g.getValues());
 	}
 
