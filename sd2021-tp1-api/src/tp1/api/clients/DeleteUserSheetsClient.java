@@ -46,7 +46,6 @@ public class DeleteUserSheetsClient {
 
 			} catch (ProcessingException pe) {
 				System.out.println("Timeout occurred");
-				pe.printStackTrace();
 				retries++;
 				try {
 					Thread.sleep(RETRY_PERIOD);

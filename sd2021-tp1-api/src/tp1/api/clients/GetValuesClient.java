@@ -1,12 +1,16 @@
 package tp1.api.clients;
 
 import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
@@ -20,13 +24,17 @@ public class GetValuesClient {
 	public final static long RETRY_PERIOD = 1000;
 	public final static int CONNECTION_TIMEOUT = 1000;
 	public final static int REPLY_TIMEOUT = 600;
+	
+	private final Map<String, String[][]> cache = new HashMap<String, String[][]>();
 
 	private String serverUrl;
 	private String sheetId;
+	private String userId;
 
-	public GetValuesClient(String serverUrl, String sheetId) {
+	public GetValuesClient(String serverUrl, String sheetId, String userId) {
 		this.serverUrl = serverUrl;
 		this.sheetId = sheetId;
+		this.userId = userId;
 	}
 
 	public String[][] getValues() {
@@ -45,18 +53,15 @@ public class GetValuesClient {
 		while (!success && retries < MAX_RETRIES) {
 
 			try {
-				
-				System.out.println(target.path("import/" + sheetId));
-				
-				Response r = target.path("import/" + sheetId)
+								
+				Response r = target.path(sheetId + "/import").queryParam("userId", userId)
 						.request()
 						.accept(MediaType.APPLICATION_JSON)
 						.get();
-				
-				System.out.println(target.path("import/" + sheetId));
-				
+								
 				if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
 					String[][] s = r.readEntity(String[][].class);
+					cache.put(sheetId, s);
 					return s;
 				} else
 					System.out.println("Error, HTTP error status: " + r.getStatus() );
@@ -64,8 +69,11 @@ public class GetValuesClient {
 				success = true;
 			} catch (ProcessingException pe) {
 				System.out.println("Timeout occurred");
-				pe.printStackTrace();
 				retries++;
+				String[][] values = cache.get(sheetId);
+				if(retries >= MAX_RETRIES && values != null) {
+					return values;
+				}
 				try {
 					Thread.sleep(RETRY_PERIOD);
 				} catch (InterruptedException e) {
@@ -75,7 +83,7 @@ public class GetValuesClient {
 			}
 		}
 
-		return null;
+		throw new WebApplicationException(Status.BAD_GATEWAY);
 
 	}
 

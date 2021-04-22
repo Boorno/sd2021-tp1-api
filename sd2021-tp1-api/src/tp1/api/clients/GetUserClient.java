@@ -53,7 +53,6 @@ public class GetUserClient {
 			return r.getStatus();
 			} catch (ProcessingException pe) {
 				System.out.println("Timeout occurred");
-				pe.printStackTrace();
 				retries++;
 				try { Thread.sleep( RETRY_PERIOD ); } catch (InterruptedException e) {
 					//nothing to be done here, if this happens we will just retry sooner.

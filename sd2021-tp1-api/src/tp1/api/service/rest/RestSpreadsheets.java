@@ -150,7 +150,7 @@ public interface RestSpreadsheets {
 	void deletedUser(@PathParam("userId") String userId);
 	
 	@GET
-	@Path("/import/{sheetId}")
+	@Path("/{sheetId}/import")
 	@Produces(MediaType.APPLICATION_JSON)
-	String[][] importRanges(@PathParam("sheetId") String sheetId);
+	String[][] importRanges(@PathParam("sheetId") String sheetId, @QueryParam("userId") String userId);
 }

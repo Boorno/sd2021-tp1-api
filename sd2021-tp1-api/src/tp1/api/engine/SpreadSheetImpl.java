@@ -7,10 +7,12 @@ import tp1.util.CellRange;
 
 public class SpreadSheetImpl implements AbstractSpreadsheet{
 	
-	Spreadsheet sheet;
+	private Spreadsheet sheet;
+	private String userId;
 	
-	public SpreadSheetImpl(Spreadsheet sheet) {
+	public SpreadSheetImpl(Spreadsheet sheet, String userId) {
 		this.sheet = sheet;
+		this.userId = userId;
 	}
 	
 	@Override
@@ -47,7 +49,7 @@ public class SpreadSheetImpl implements AbstractSpreadsheet{
 		System.out.println(sheetInfo[1]);
 		System.out.println(sheetURL);
 		
-		GetValuesClient g = new GetValuesClient(sheetInfo[0], sheetInfo[1]);
+		GetValuesClient g = new GetValuesClient(sheetInfo[0], sheetInfo[1], userId);
 						
 		return c.extractRangeValuesFrom(g.getValues());
 	}

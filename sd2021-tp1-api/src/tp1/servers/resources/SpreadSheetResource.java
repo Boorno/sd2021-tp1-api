@@ -52,8 +52,7 @@ public class SpreadSheetResource implements RestSpreadsheets {
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				
 			}
 		}
 		return usersURI;
@@ -210,7 +209,7 @@ public class SpreadSheetResource implements RestSpreadsheets {
 					throw new WebApplicationException(Status.FORBIDDEN);
 				}
 
-				String[][] values = SpreadsheetEngineImpl.getInstance().computeSpreadsheetValues(new SpreadSheetImpl(sheet));
+				String[][] values = SpreadsheetEngineImpl.getInstance().computeSpreadsheetValues(new SpreadSheetImpl(sheet, userId + "@" + domain));
 
 				return values;
 			}
@@ -368,12 +367,15 @@ public class SpreadSheetResource implements RestSpreadsheets {
 	}
 
 	@Override
-	public String[][] importRanges(String sheetId) {
+	public String[][] importRanges(String sheetId, String userId) {
 		Spreadsheet sheet = sheets.get(sheetId);
 		if(sheet == null)
 			throw new WebApplicationException(Status.NOT_FOUND);
 		
-		String[][] values = SpreadsheetEngineImpl.getInstance().computeSpreadsheetValues(new SpreadSheetImpl(sheet));
+		if(!sheet.getSharedWith().contains(userId))
+			throw new WebApplicationException(Status.FORBIDDEN);
+		
+		String[][] values = SpreadsheetEngineImpl.getInstance().computeSpreadsheetValues(new SpreadSheetImpl(sheet, sheet.getOwner()+"@"+domain));
 
 		return values;
 	}
