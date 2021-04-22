@@ -1,5 +1,7 @@
 package tp1.api.service.soap;
 
+import java.net.MalformedURLException;
+
 import jakarta.jws.WebService;
 import tp1.api.Spreadsheet;
 
@@ -16,8 +18,10 @@ public interface SoapSpreadsheets {
 	 * @param password - the password of the owner of the spreadsheet.
 	 * 
 	 * @throws SheetsException otherwise
+	 * @throws UsersException 
+	 * @throws MalformedURLException 
 	 */
-	String createSpreadsheet(Spreadsheet sheet, String password ) throws SheetsException;
+	String createSpreadsheet(Spreadsheet sheet, String password ) throws SheetsException, MalformedURLException, UsersException;
 
 	
 	/**
@@ -26,8 +30,10 @@ public interface SoapSpreadsheets {
 	 * @param password - the password of the owner of the spreadsheet.
 	 * 
 	 * @throws SheetsException otherwise
+	 * @throws UsersException 
+	 * @throws MalformedURLException 
 	 */
-	void deleteSpreadsheet(String sheetId, String password) throws SheetsException;
+	void deleteSpreadsheet(String sheetId, String password) throws SheetsException, MalformedURLException, UsersException;
 
 	/**
 	 * Retrieve a spreadsheet.
