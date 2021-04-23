@@ -1,4 +1,4 @@
-package tp1.api.clients;
+package tp1.api.clients.rest;
 
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.WebApplicationException;

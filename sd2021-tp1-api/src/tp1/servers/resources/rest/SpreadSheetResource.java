@@ -12,7 +12,7 @@ import jakarta.inject.Singleton;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response.Status;
 import tp1.api.Spreadsheet;
-import tp1.api.clients.GetUserClient;
+import tp1.api.clients.rest.GetUserClient;
 import tp1.api.engine.AbstractSpreadsheet;
 import tp1.api.engine.SpreadSheetImpl;
 import tp1.api.service.rest.RestSpreadsheets;

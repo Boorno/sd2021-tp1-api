@@ -12,8 +12,8 @@ import jakarta.inject.Singleton;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response.Status;
 import tp1.api.User;
-import tp1.api.clients.DeleteUserSheetsClient;
-import tp1.api.clients.GetUserClient;
+import tp1.api.clients.rest.DeleteUserSheetsClient;
+import tp1.api.clients.rest.GetUserClient;
 import tp1.api.service.rest.RestUsers;
 import tp1.discovery.Discovery;
 
@@ -138,13 +138,11 @@ public class UsersResource implements RestUsers {
 	public User deleteUser(String userId, String password) {
 		Log.info("deleteUser : user = " + userId + "; pwd = " + password);
 		
-		String sheetsURI = getSheetURI();
-
-		DeleteUserSheetsClient deluser = new DeleteUserSheetsClient(sheetsURI, userId);
+		User user = null;
 		
 		synchronized (this) {
 
-			User user = users.get(userId);
+			user = users.get(userId);
 
 			// Check if user exists
 			if (user == null) {
@@ -160,10 +158,15 @@ public class UsersResource implements RestUsers {
 
 			users.remove(userId);
 
-			deluser.deleteUserSheets();
-			
-			return user;
 		}
+		
+		String sheetsURI = getSheetURI();
+
+		DeleteUserSheetsClient deluser = new DeleteUserSheetsClient(sheetsURI, userId);
+		
+		deluser.deleteUserSheets();
+		
+		return user;
 
 	}
 
@@ -171,16 +174,18 @@ public class UsersResource implements RestUsers {
 	public List<User> searchUsers(String pattern) {
 		Log.info("searchUsers : pattern = " + pattern);
 
-		if (pattern == null) {
+		if (pattern == null || pattern.equals("")) {
 			return (List<User>) users.values();
 		}
 
 		List<User> sUsers = new LinkedList<User>();
 
 		synchronized (this) {
-			for (User u : users.values()) {
-				if (u.getFullName().toLowerCase().contains(pattern.toLowerCase()))
+			for (User user : users.values()) {
+				if (user.getFullName().toLowerCase().contains(pattern.toLowerCase())) {
+					User u = new User(user.getUserId(), user.getFullName(), user.getEmail(), "");
 					sUsers.add(u);
+				}
 			}
 		}
 		return sUsers;

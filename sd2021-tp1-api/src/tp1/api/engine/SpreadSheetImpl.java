@@ -1,7 +1,7 @@
 package tp1.api.engine;
 
 import tp1.api.Spreadsheet;
-import tp1.api.clients.GetValuesClient;
+import tp1.api.clients.rest.GetValuesClient;
 import tp1.api.service.rest.RestSpreadsheets;
 import tp1.util.CellRange;
 
