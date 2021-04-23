@@ -1,4 +1,4 @@
-package tp1.servers.resources;
+package tp1.servers.resources.rest;
 
 import java.net.InetSocketAddress;
 import java.net.URI;

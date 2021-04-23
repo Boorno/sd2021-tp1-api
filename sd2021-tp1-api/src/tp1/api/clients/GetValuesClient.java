@@ -25,15 +25,18 @@ public class GetValuesClient {
 	public final static int CONNECTION_TIMEOUT = 1000;
 	public final static int REPLY_TIMEOUT = 600;
 	
-	private final Map<String, String[][]> cache = new HashMap<String, String[][]>();
+	private static Map<String, String[][]> cache = new HashMap<String, String[][]>();
 
+	private String sheetURL;
 	private String serverUrl;
 	private String sheetId;
 	private String userId;
 
-	public GetValuesClient(String serverUrl, String sheetId, String userId) {
-		this.serverUrl = serverUrl;
-		this.sheetId = sheetId;
+	public GetValuesClient(String sheetURL, String userId) {
+		this.sheetURL = sheetURL;
+		String[] sheetInfo = sheetURL.split(RestSpreadsheets.PATH+"/");
+		this.serverUrl = sheetInfo[0];
+		this.sheetId = sheetInfo[1];
 		this.userId = userId;
 	}
 
@@ -61,7 +64,7 @@ public class GetValuesClient {
 								
 				if (r.getStatus() == Status.OK.getStatusCode() && r.hasEntity()) {
 					String[][] s = r.readEntity(String[][].class);
-					cache.put(sheetId, s);
+					cache.put(sheetURL, s);
 					return s;
 				} else
 					System.out.println("Error, HTTP error status: " + r.getStatus() );
@@ -70,7 +73,7 @@ public class GetValuesClient {
 			} catch (ProcessingException pe) {
 				System.out.println("Timeout occurred");
 				retries++;
-				String[][] values = cache.get(sheetId);
+				String[][] values = cache.get(sheetURL);
 				if(retries >= MAX_RETRIES && values != null) {
 					return values;
 				}

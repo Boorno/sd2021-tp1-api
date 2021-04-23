@@ -1,4 +1,4 @@
-package tp1.servers;
+package tp1.servers.rest;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -8,8 +8,8 @@ import java.util.logging.Logger;
 import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
-import tp1.servers.resources.UsersResource;
 import tp1.discovery.Discovery;
+import tp1.servers.resources.rest.UsersResource;
 
 public class UsersServer {
 

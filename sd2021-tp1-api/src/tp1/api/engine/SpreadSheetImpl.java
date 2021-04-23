@@ -41,15 +41,9 @@ public class SpreadSheetImpl implements AbstractSpreadsheet{
 
 	@Override
 	public String[][] getRangeValues(String sheetURL, String range) {
-		String[] sheetInfo = sheetURL.split(RestSpreadsheets.PATH+"/");
-		
 		CellRange c = new CellRange(range);
 		
-		System.out.println(sheetInfo[0]);
-		System.out.println(sheetInfo[1]);
-		System.out.println(sheetURL);
-		
-		GetValuesClient g = new GetValuesClient(sheetInfo[0], sheetInfo[1], userId);
+		GetValuesClient g = new GetValuesClient(sheetURL, userId);
 						
 		return c.extractRangeValuesFrom(g.getValues());
 	}
