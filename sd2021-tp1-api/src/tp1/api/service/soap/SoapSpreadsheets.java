@@ -73,8 +73,10 @@ public interface SoapSpreadsheets {
 	 * @param password - The password of the owner of the spreadsheet.
 	 * 
 	 * @throws SheetsException otherwise
+	 * @throws UsersException 
+	 * @throws MalformedURLException 
 	 */
-	void unshareSpreadsheet( String sheetId, String userId, String password) throws SheetsException;
+	void unshareSpreadsheet( String sheetId, String userId, String password) throws SheetsException, MalformedURLException, UsersException;
 
 	
 	/**
@@ -87,8 +89,10 @@ public interface SoapSpreadsheets {
 	 * @param password - the password of the owner of the spreadsheet
 	 * 
 	 * @throws SheetsException otherwise
+	 * @throws UsersException 
+	 * @throws MalformedURLException 
 	 **/
-	void updateCell( String sheetId, String cell, String rawValue, String userId, String password) throws SheetsException;
+	void updateCell( String sheetId, String cell, String rawValue, String userId, String password) throws SheetsException, MalformedURLException, UsersException;
 
 	
 	/**
@@ -98,9 +102,14 @@ public interface SoapSpreadsheets {
 	 * @param password - the password of the owner of the spreadsheet
 	 * 
 	 * @throws SheetsException otherwise
+	 * @throws UsersException 
+	 * @throws MalformedURLException 
 	 */
-	String[][] getSpreadsheetValues(String sheetId, String userId, String password) throws SheetsException;
+	String[][] getSpreadsheetValues(String sheetId, String userId, String password) throws SheetsException, MalformedURLException, UsersException;
 
 
 	void deletedUser(String userId);
+
+
+	String[][] importRanges(String sheetId, String userId) throws SheetsException;
 }

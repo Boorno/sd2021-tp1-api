@@ -1,5 +1,9 @@
 package tp1.api.engine;
 
+import java.net.MalformedURLException;
+
+import tp1.api.service.soap.SheetsException;
+
 /**
  * 
  * Interface used to feed a spreadsheet to the SpreadsheetEngine and compute its values.
@@ -36,6 +40,8 @@ public interface AbstractSpreadsheet {
 	 * @param sheetURL - the url of the sheet referenced by the importrange formula
 	 * @param range - the range of cells covered by the formula
 	 * @return the computed values.
+	 * @throws SheetsException 
+	 * @throws MalformedURLException 
 	 */
-	String[][] getRangeValues(String sheetURL, String range);
+	String[][] getRangeValues(String sheetURL, String range) throws MalformedURLException, SheetsException;
 }

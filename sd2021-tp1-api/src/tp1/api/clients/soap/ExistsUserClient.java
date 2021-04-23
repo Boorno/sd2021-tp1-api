@@ -1,4 +1,4 @@
-package tp1.api.clients.rest;
+package tp1.api.clients.soap;
 
 import java.net.MalformedURLException;
 import java.net.URL;

@@ -13,7 +13,7 @@ import tp1.api.service.soap.SoapSpreadsheets;
 
 public class DeleteUserSheetsClient {
 
-	public final static String USERS_WSDL = "/users/?wsdl";
+	public final static String SHEETS_WSDL = "/sheets/?wsdl";
 	
 	public final static int MAX_RETRIES = 3;
 	public final static long RETRY_PERIOD = 1000;
@@ -34,7 +34,7 @@ public class DeleteUserSheetsClient {
 		
 		try {
 			QName QNAME = new QName(SoapSpreadsheets.NAMESPACE, SoapSpreadsheets.NAME);
-			Service service = Service.create( new URL(serverUrl + USERS_WSDL), QNAME );
+			Service service = Service.create( new URL(serverUrl + SHEETS_WSDL), QNAME );
 			sheets = service.getPort( tp1.api.service.soap.SoapSpreadsheets.class );
 		} catch ( WebServiceException e) {
 			System.err.println("Could not contact the server: " + e.getMessage());

@@ -204,11 +204,10 @@ public class SpreadSheetResource implements RestSpreadsheets {
 				}
 
 				if (!sheet.getOwner().equals(userId) && !sheet.getSharedWith().contains(userId + "@" + domain)) {
-					System.out.println(userId);
 					throw new WebApplicationException(Status.FORBIDDEN);
 				}
 
-				String[][] values = SpreadsheetEngineImpl.getInstance().computeSpreadsheetValues(new SpreadSheetImpl(sheet, userId + "@" + domain));
+				String[][] values = SpreadsheetEngineImpl.getInstance().computeSpreadsheetValues(new SpreadSheetImpl(sheet, userId + "@" + domain, true));
 
 				return values;
 			}
@@ -292,11 +291,12 @@ public class SpreadSheetResource implements RestSpreadsheets {
 				Log.info("Password incorrect.");
 				throw new WebApplicationException(Status.FORBIDDEN);
 			} else if (responseStatus == Status.OK.getStatusCode()) {
+				
+				Set<String> sW = sheet.getSharedWith();
 
-				if (sheet.getSharedWith().contains(userId))
+				if (sW.contains(userId))
 					throw new WebApplicationException(Status.CONFLICT);
 
-				Set<String> sW = sheet.getSharedWith();
 				sW.add(userId);
 				sheet.setSharedWith(sW);
 
@@ -344,7 +344,7 @@ public class SpreadSheetResource implements RestSpreadsheets {
 			} else if (responseStatus == Status.OK.getStatusCode()) {
 				Set<String> sW = sheet.getSharedWith();
 				
-				if (!sheet.getSharedWith().contains(userId))
+				if (!sW.contains(userId))
 					throw new WebApplicationException(Status.NOT_FOUND);
 
 				sW.remove(userId);
@@ -374,7 +374,7 @@ public class SpreadSheetResource implements RestSpreadsheets {
 		if(!sheet.getSharedWith().contains(userId))
 			throw new WebApplicationException(Status.FORBIDDEN);
 		
-		String[][] values = SpreadsheetEngineImpl.getInstance().computeSpreadsheetValues(new SpreadSheetImpl(sheet, sheet.getOwner()+"@"+domain));
+		String[][] values = SpreadsheetEngineImpl.getInstance().computeSpreadsheetValues(new SpreadSheetImpl(sheet, sheet.getOwner()+"@"+domain, true));
 
 		return values;
 	}

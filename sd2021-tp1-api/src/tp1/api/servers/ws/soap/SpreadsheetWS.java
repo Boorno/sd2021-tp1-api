@@ -13,13 +13,15 @@ import jakarta.jws.WebService;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response.Status;
 import tp1.api.Spreadsheet;
-import tp1.api.clients.rest.ExistsUserClient;
 import tp1.api.clients.rest.GetUserClient;
+import tp1.api.clients.soap.ExistsUserClient;
 import tp1.api.clients.soap.GetUserClientSoap;
+import tp1.api.engine.SpreadSheetImpl;
 import tp1.api.service.soap.SheetsException;
 import tp1.api.service.soap.SoapSpreadsheets;
 import tp1.api.service.soap.UsersException;
 import tp1.discovery.Discovery;
+import tp1.impl.engine.SpreadsheetEngineImpl;
 
 @WebService(serviceName = SoapSpreadsheets.NAME, targetNamespace = SoapSpreadsheets.NAMESPACE, endpointInterface = SoapSpreadsheets.INTERFACE)
 public class SpreadsheetWS implements SoapSpreadsheets {
@@ -136,7 +138,8 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 	}
 
 	@Override
-	public void shareSpreadsheet(String sheetId, String userId, String password) throws SheetsException, MalformedURLException, UsersException {
+	public void shareSpreadsheet(String sheetId, String userId, String password)
+			throws SheetsException, MalformedURLException, UsersException {
 		String[] tokens = userId.split("@");
 
 		String usersURI = getUserURI(tokens[1]);
@@ -155,10 +158,11 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 
 			(new GetUserClientSoap(getUserURI(domain), sheet.getOwner(), password)).getUser();
 
-			if (sheet.getSharedWith().contains(userId))
+			Set<String> sW = sheet.getSharedWith();
+
+			if (sW.contains(userId))
 				throw new SheetsException("Share already exists.");
 
-			Set<String> sW = sheet.getSharedWith();
 			sW.add(userId);
 			sheet.setSharedWith(sW);
 
@@ -166,22 +170,85 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 	}
 
 	@Override
-	public void unshareSpreadsheet(String sheetId, String userId, String password) throws SheetsException {
-		// TODO Auto-generated method stub
+	public void unshareSpreadsheet(String sheetId, String userId, String password)
+			throws SheetsException, MalformedURLException, UsersException {
+		String[] tokens = userId.split("@");
+
+		String usersURI = getUserURI(tokens[1]);
+
+		String uId = tokens[0];
+
+		(new ExistsUserClient(usersURI, uId)).existsUser();
+
+		synchronized (this) {
+			Spreadsheet sheet = sheets.get(sheetId);
+
+			if (sheet == null) {
+				Log.info("Sheet does not exist.");
+				throw new SheetsException("Sheet does not exist.");
+			}
+
+			(new GetUserClientSoap(getUserURI(domain), sheet.getOwner(), password)).getUser();
+
+			Set<String> sW = sheet.getSharedWith();
+
+			if (!sW.contains(userId))
+				throw new SheetsException("Share does not exist.");
+
+			sW.remove(userId);
+			sheet.setSharedWith(sW);
+
+		}
 
 	}
 
 	@Override
 	public void updateCell(String sheetId, String cell, String rawValue, String userId, String password)
-			throws SheetsException {
-		// TODO Auto-generated method stub
+			throws SheetsException, MalformedURLException, UsersException {
+
+		(new GetUserClientSoap(getUserURI(domain), userId, password)).getUser();
+
+		synchronized (this) {
+			Spreadsheet sheet = sheets.get(sheetId);
+
+			if (sheet == null) {
+				Log.info("Sheet does not exist.");
+				throw new SheetsException("Sheet does not exist.");
+			}
+
+			if (!sheet.getOwner().equals(userId) && !sheet.getSharedWith().contains(userId + "@" + domain)) {
+				throw new SheetsException("User cant access sheet.");
+			}
+
+			sheet.setCellRawValue(cell, rawValue);
+		}
 
 	}
 
 	@Override
-	public String[][] getSpreadsheetValues(String sheetId, String userId, String password) throws SheetsException {
-		// TODO Auto-generated method stub
-		return null;
+	public String[][] getSpreadsheetValues(String sheetId, String userId, String password) throws SheetsException, MalformedURLException, UsersException {
+		(new GetUserClientSoap(getUserURI(domain), userId, password)).getUser();
+		
+		String [][] values = null;
+		
+		synchronized (this) {
+			Spreadsheet sheet = sheets.get(sheetId);
+
+			if (sheet == null) {
+				Log.info("Sheet does not exist.");
+				throw new SheetsException("Sheet does not exist.");
+			}
+
+			if (!sheet.getOwner().equals(userId) && !sheet.getSharedWith().contains(userId + "@" + domain)) {
+				throw new SheetsException("User cant access sheet.");
+			}
+
+			values = SpreadsheetEngineImpl.getInstance()
+					.computeSpreadsheetValues(new SpreadSheetImpl(sheet, userId + "@" + domain, false));
+	
+		}
+		
+		return values;
 	}
 
 	@Override
@@ -189,6 +256,20 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 		synchronized (this) {
 			sheets.entrySet().removeIf(e -> e.getValue().getOwner().equals(userId));
 		}
+	}
+	
+	@Override
+	public String[][] importRanges(String sheetId, String userId) throws SheetsException {
+		Spreadsheet sheet = sheets.get(sheetId);
+		if(sheet == null)
+			throw new SheetsException("Sheet does not exist.");
+		
+		if(!sheet.getSharedWith().contains(userId))
+			throw new SheetsException("User cant access sheet.");
+		
+		String[][] values = SpreadsheetEngineImpl.getInstance().computeSpreadsheetValues(new SpreadSheetImpl(sheet, sheet.getOwner()+"@"+domain, false));
+
+		return values;
 	}
 
 }
