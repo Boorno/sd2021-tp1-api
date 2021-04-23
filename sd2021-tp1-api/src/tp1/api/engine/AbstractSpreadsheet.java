@@ -43,5 +43,5 @@ public interface AbstractSpreadsheet {
 	 * @throws SheetsException 
 	 * @throws MalformedURLException 
 	 */
-	String[][] getRangeValues(String sheetURL, String range) throws MalformedURLException, SheetsException;
+	String[][] getRangeValues(String sheetURL, String range);
 }

@@ -1,12 +1,8 @@
 package tp1.api.engine;
 
-import java.net.MalformedURLException;
-
 import tp1.api.Spreadsheet;
 import tp1.api.clients.rest.GetValuesClient;
 import tp1.api.clients.soap.GetValuesClientSoap;
-import tp1.api.service.rest.RestSpreadsheets;
-import tp1.api.service.soap.SheetsException;
 import tp1.util.CellRange;
 
 public class SpreadSheetImpl implements AbstractSpreadsheet{
@@ -46,7 +42,7 @@ public class SpreadSheetImpl implements AbstractSpreadsheet{
 	}
 
 	@Override
-	public String[][] getRangeValues(String sheetURL, String range) throws MalformedURLException, SheetsException {
+	public String[][] getRangeValues(String sheetURL, String range) {
 		CellRange c = new CellRange(range);
 		
 		String[][] values = null;
@@ -56,7 +52,10 @@ public class SpreadSheetImpl implements AbstractSpreadsheet{
 			values = gr.getValues();
 		} else {
 			GetValuesClientSoap gs = new GetValuesClientSoap(sheetURL, userId);
-			values = gs.getValues();
+			try {
+				values = gs.getValues();
+			} catch(Exception e){
+			}
 		}
 						
 		return c.extractRangeValuesFrom(values);
