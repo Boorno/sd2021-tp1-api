@@ -1,6 +1,8 @@
 package tp1.api.servers.ws.soap;
 
+import java.net.URI;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -32,6 +34,24 @@ public class UsersWS implements SoapUsers {
 		this.users = new HashMap<String, User>();
 		this.domain = domain;
 		this.discovery = d;
+	}
+	
+	private String getSheetURI() {
+		String sheetsURI;
+		while (true) {
+			URI[] sheetURIs = discovery.knownUrisOf(domain + ":sheets");
+			if (sheetURIs != null) {
+				sheetsURI = sheetURIs[0].toString();
+				break;
+			}
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return sheetsURI;
 	}
 
 	@Override
@@ -93,20 +113,97 @@ public class UsersWS implements SoapUsers {
 
 	@Override
 	public User updateUser(String userId, String password, User user) throws UsersException {
-		// TODO Complete method
-		return null;
+		Log.info("updateUser : user = " + userId + "; pwd = " + password + " ; user = " + user);
+		
+		User svUser = null;
+
+		synchronized (this) {
+
+			svUser = users.get(userId);
+
+			if (svUser == null) {
+				Log.info("User does not exist.");
+				throw new UsersException("User does not exist.");
+			}
+
+			if (!svUser.getPassword().equals(password)) {
+				Log.info("Password is incorrect.");
+				throw new UsersException("Password is incorrect.");
+			}
+			
+			if(user.getEmail() != null) svUser.setEmail(user.getEmail());
+			if(user.getFullName() != null) svUser.setFullName(user.getFullName());
+			if(user.getPassword() != null) svUser.setPassword(user.getPassword());
+			
+		}
+
+		return svUser;
 	}
 
 	@Override
 	public User deleteUser(String userId, String password) throws UsersException {
-		// TODO Complete method
-		return null;
+		Log.info("deleteUser : user = " + userId + "; pwd = " + password);
+		
+		User user = null;
+		
+		synchronized (this) {
+
+			user = users.get(userId);
+
+			// Check if user exists
+			if (user == null) {
+				Log.info("User does not exist.");
+				throw new UsersException("User does not exist.");
+			}
+
+			// Check if the password is correct
+			if (!user.getPassword().equals(password)) {
+				Log.info("Password is incorrect.");
+				throw new UsersException("Password is incorrect.");
+			}
+
+			users.remove(userId);
+
+		}
+		
+//		String sheetsURI = getSheetURI();
+//
+//		DeleteUserSheetsClient deluser = new DeleteUserSheetsClient(sheetsURI, userId);
+//		
+//		deluser.deleteUserSheets();
+		
+		return user;
 	}
 
 	@Override
 	public List<User> searchUsers(String pattern) throws UsersException {
-		// TODO Complete method
-		return null;
+		Log.info("searchUsers : pattern = " + pattern);
+
+		if (pattern == null || pattern.equals("")) {
+			return (List<User>) users.values();
+		}
+
+		List<User> sUsers = new LinkedList<User>();
+
+		synchronized (this) {
+			for (User user : users.values()) {
+				if (user.getFullName().toLowerCase().contains(pattern.toLowerCase())) {
+					User u = new User(user.getUserId(), user.getFullName(), user.getEmail(), "");
+					sUsers.add(u);
+				}
+			}
+		}
+		return sUsers;
+	}
+
+	@Override
+	public void existsUser(String userId) throws UsersException {
+		synchronized (this) {
+			if(!users.containsKey(userId)) {
+				Log.info("User does not exist.");
+				throw new UsersException("User does not exist.");
+			}
+		}
 	}
 
 }

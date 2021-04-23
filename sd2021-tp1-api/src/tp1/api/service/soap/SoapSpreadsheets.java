@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 
 import jakarta.jws.WebService;
 import tp1.api.Spreadsheet;
+import tp1.api.User;
 
 @WebService(serviceName=SoapSpreadsheets.NAME, targetNamespace=SoapSpreadsheets.NAMESPACE, endpointInterface=SoapSpreadsheets.INTERFACE)
 public interface SoapSpreadsheets {
@@ -43,8 +44,10 @@ public interface SoapSpreadsheets {
 	 * @param password - The password of the user performing the operation.
 	 * 
 	 * @throws SheetsException otherwise
+	 * @throws MalformedURLException 
+	 * @throws UsersException 
 	 */
-	Spreadsheet getSpreadsheet(String sheetId , String userId, String password) throws SheetsException;
+	Spreadsheet getSpreadsheet(String sheetId , String userId, String password) throws SheetsException, MalformedURLException, UsersException;
 		
 	
 	/**
@@ -56,8 +59,10 @@ public interface SoapSpreadsheets {
 	 * @param password - The password of the owner of the spreadsheet.
 	 * 
 	 * @throws SheetsException otherwise
+	 * @throws UsersException 
+	 * @throws MalformedURLException 
 	 */
-	void shareSpreadsheet( String sheetId, String userId, String password) throws SheetsException;
+	void shareSpreadsheet( String sheetId, String userId, String password) throws SheetsException, MalformedURLException, UsersException;
 
 	
 	/**
@@ -95,4 +100,7 @@ public interface SoapSpreadsheets {
 	 * @throws SheetsException otherwise
 	 */
 	String[][] getSpreadsheetValues(String sheetId, String userId, String password) throws SheetsException;
+
+
+	void deletedUser(String userId);
 }

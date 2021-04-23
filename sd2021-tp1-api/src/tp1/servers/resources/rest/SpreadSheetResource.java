@@ -162,7 +162,6 @@ public class SpreadSheetResource implements RestSpreadsheets {
 				}
 
 				if (!sheet.getOwner().equals(userId) && !sheet.getSharedWith().contains(userId + "@" + domain)) {
-					System.out.println(userId);
 					throw new WebApplicationException(Status.FORBIDDEN);
 				}
 			}

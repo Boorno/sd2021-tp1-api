@@ -54,4 +54,7 @@ public interface SoapUsers {
 	 */
 	@WebMethod
 	List<User> searchUsers(String pattern) throws UsersException;
+	
+	@WebMethod
+	void existsUser(String userId) throws UsersException;
 }
