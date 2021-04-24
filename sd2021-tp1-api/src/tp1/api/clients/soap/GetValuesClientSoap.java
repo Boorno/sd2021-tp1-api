@@ -7,22 +7,11 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
-import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.client.ClientProperties;
-
 import com.sun.xml.ws.client.BindingProviderProperties;
 
-import jakarta.ws.rs.ProcessingException;
-import jakarta.ws.rs.client.Client;
-import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
 import jakarta.xml.ws.BindingProvider;
 import jakarta.xml.ws.Service;
 import jakarta.xml.ws.WebServiceException;
-import tp1.api.service.rest.RestSpreadsheets;
 import tp1.api.service.soap.SheetsException;
 import tp1.api.service.soap.SoapSpreadsheets;
 import tp1.servers.soap.SheetsServer;
@@ -47,8 +36,6 @@ public class GetValuesClientSoap {
 		String[] sheetInfo = sheetURL.split("/" + SheetsServer.SERVICE + "/");
 		this.serverUrl = sheetInfo[0];
 		this.sheetId = sheetInfo[1];
-		System.out.println("\n"+this.serverUrl);
-		System.out.println("\n"+this.sheetId);
 		this.userId = userId;
 	}
 

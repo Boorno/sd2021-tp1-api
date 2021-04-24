@@ -1,7 +1,5 @@
 package tp1.api.engine;
 
-import java.net.MalformedURLException;
-
 import tp1.api.service.soap.SheetsException;
 
 /**

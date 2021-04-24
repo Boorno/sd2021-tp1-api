@@ -1,6 +1,5 @@
 package tp1.servers.resources.rest;
 
-import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.LinkedList;

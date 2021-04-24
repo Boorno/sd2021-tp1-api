@@ -1,26 +1,18 @@
 package tp1.api.servers.ws.soap;
 
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
 import jakarta.jws.WebService;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response.Status;
 import tp1.api.Spreadsheet;
-import tp1.api.clients.soap.ExistsUserClient;
-import tp1.api.clients.soap.GetUserClientSoap;
+import tp1.api.clients.soap.SoapClients;
 import tp1.api.engine.SpreadSheetImpl;
 import tp1.api.service.soap.SheetsException;
 import tp1.api.service.soap.SoapSpreadsheets;
-import tp1.api.service.soap.SoapUsers;
-import tp1.api.service.soap.UsersException;
 import tp1.discovery.Discovery;
 import tp1.impl.engine.SpreadsheetEngineImpl;
 
@@ -76,7 +68,14 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 		String usersURI = getUserURI(domain);
 
 		try {
-			(new GetUserClientSoap(usersURI, sheet.getOwner(), password)).getUser();
+			String[] args = new String[4];
+			args[0] = "user";
+			args[1] = usersURI;
+			args[2] = sheet.getOwner();
+			args[3] = password;
+			SoapClients sc = new SoapClients(args);
+			sc.getUser();
+			//(new GetUserClientSoap(usersURI, sheet.getOwner(), password)).getUser();
 		} catch (Exception e) {
 			throw new SheetsException("Cant get user.");
 		}
@@ -111,7 +110,14 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 			String usersURI = getUserURI(domain);
 
 			try {
-				(new GetUserClientSoap(usersURI, sheet.getOwner(), password)).getUser();
+				//(new GetUserClientSoap(usersURI, sheet.getOwner(), password)).getUser();
+				String[] args = new String[4];
+				args[0] = "user";
+				args[1] = usersURI;
+				args[2] = sheet.getOwner();
+				args[3] = password;
+				SoapClients sc = new SoapClients(args);
+				sc.getUser();
 			} catch (Exception e) {
 				throw new SheetsException("Cant get user.");
 			}
@@ -127,7 +133,14 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 		String usersURI = getUserURI(domain);
 
 		try {
-			(new GetUserClientSoap(usersURI, userId, password)).getUser();
+			String[] args = new String[4];
+			args[0] = "user";
+			args[1] = usersURI;
+			args[2] = userId;
+			args[3] = password;
+			SoapClients sc = new SoapClients(args);
+			sc.getUser();
+			//(new GetUserClientSoap(usersURI, userId, password)).getUser();
 		} catch (Exception e) {
 			throw new SheetsException("Cant get user.");
 		}
@@ -159,7 +172,13 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 		String uId = tokens[0];
 
 		try {
-			(new ExistsUserClient(usersURI, uId)).existsUser();
+			String[] args = new String[4];
+			args[0] = "delete";
+			args[1] = usersURI;
+			args[2] = uId;
+			SoapClients sc = new SoapClients(args);
+			sc.existsUser();
+			//(new ExistsUserClient(usersURI, uId)).existsUser();
 		} catch (Exception e) {
 			throw new SheetsException("User does not exist.");
 		}
@@ -172,7 +191,14 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 			}
 
 			try {
-				(new GetUserClientSoap(getUserURI(domain), sheet.getOwner(), password)).getUser();
+				String[] args = new String[4];
+				args[0] = "user";
+				args[1] = getUserURI(domain);
+				args[2] = sheet.getOwner();
+				args[3] = password;
+				SoapClients sc = new SoapClients(args);
+				sc.getUser();
+				//(new GetUserClientSoap(getUserURI(domain), sheet.getOwner(), password)).getUser();
 			} catch (Exception e) {
 				throw new SheetsException("Cant get user.");
 			}
@@ -197,7 +223,13 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 		String uId = tokens[0];
 
 		try {
-			(new ExistsUserClient(usersURI, uId)).existsUser();
+			String[] args = new String[4];
+			args[0] = "delete";
+			args[1] = usersURI;
+			args[2] = uId;
+			SoapClients sc = new SoapClients(args);
+			sc.existsUser();
+			//(new ExistsUserClient(usersURI, uId)).existsUser();
 		} catch (Exception e) {
 			throw new SheetsException("User does not exist.");
 		}
@@ -211,7 +243,14 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 			}
 
 			try {
-				(new GetUserClientSoap(getUserURI(domain), sheet.getOwner(), password)).getUser();
+				String[] args = new String[4];
+				args[0] = "user";
+				args[1] = getUserURI(domain);
+				args[2] = sheet.getOwner();
+				args[3] = password;
+				SoapClients sc = new SoapClients(args);
+				sc.getUser();
+				//(new GetUserClientSoap(getUserURI(domain), sheet.getOwner(), password)).getUser();
 			} catch (Exception e) {
 				throw new SheetsException("Cant get user.");
 			}
@@ -233,7 +272,14 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 			throws SheetsException {
 
 		try {
-			(new GetUserClientSoap(getUserURI(domain), userId, password)).getUser();
+			String[] args = new String[4];
+			args[0] = "user";
+			args[1] = getUserURI(domain);
+			args[2] = userId;
+			args[3] = password;
+			SoapClients sc = new SoapClients(args);
+			sc.getUser();
+			//(new GetUserClientSoap(getUserURI(domain), userId, password)).getUser();
 		} catch (Exception e) {
 			throw new SheetsException("Cant get user.");
 		}
@@ -258,7 +304,14 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 	@Override
 	public String[][] getSpreadsheetValues(String sheetId, String userId, String password) throws SheetsException {
 		try {
-			(new GetUserClientSoap(getUserURI(domain), userId, password)).getUser();
+			String[] args = new String[4];
+			args[0] = "user";
+			args[1] = getUserURI(domain);
+			args[2] = userId;
+			args[3] = password;
+			SoapClients sc = new SoapClients(args);
+			sc.getUser();
+			//(new GetUserClientSoap(getUserURI(domain), userId, password)).getUser();
 		} catch (Exception e) {
 			throw new SheetsException("Cant get user.");
 		}

@@ -1,7 +1,5 @@
 package tp1.api.service.soap;
 
-import java.net.MalformedURLException;
-
 import jakarta.jws.WebMethod;
 import jakarta.jws.WebService;
 import tp1.api.Spreadsheet;

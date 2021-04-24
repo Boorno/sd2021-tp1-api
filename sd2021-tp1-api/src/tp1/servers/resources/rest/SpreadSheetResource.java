@@ -2,7 +2,6 @@ package tp1.servers.resources.rest;
 
 import java.net.URI;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -68,8 +67,6 @@ public class SpreadSheetResource implements RestSpreadsheets {
 
 		String usersURI = getUserURI(domain);
 		
-//		GetUserClient getuser = new GetUserClient(usersURI, sheet.getOwner(), password);
-		
 		String[] args = {usersURI, sheet.getOwner(), password};
 		RestClients getuser = new RestClients(args);
 
@@ -117,8 +114,6 @@ public class SpreadSheetResource implements RestSpreadsheets {
 			}
 
 			String usersURI = getUserURI(domain);
-
-			//GetUserClient getuser = new GetUserClient(usersURI, sheet.getOwner(), password);
 			
 			String[] args = {usersURI, sheet.getOwner(), password};
 			RestClients getuser = new RestClients(args);
@@ -140,8 +135,6 @@ public class SpreadSheetResource implements RestSpreadsheets {
 	public Spreadsheet getSpreadsheet(String sheetId, String userId, String password) {
 
 		String usersURI = getUserURI(domain);
-
-		//GetUserClient getuser = new GetUserClient(usersURI, userId, password);
 		
 		String[] args = {usersURI, userId, password};
 		RestClients getuser = new RestClients(args);
@@ -185,8 +178,6 @@ public class SpreadSheetResource implements RestSpreadsheets {
 	@Override
 	public String[][] getSpreadsheetValues(String sheetId, String userId, String password) {
 		String usersURI = getUserURI(domain);
-
-		//GetUserClient getuser = new GetUserClient(usersURI, userId, password);
 		
 		String[] args = {usersURI, userId, password};
 		RestClients getuser = new RestClients(args);
@@ -239,8 +230,6 @@ public class SpreadSheetResource implements RestSpreadsheets {
 		Log.info("updateCell : sheet = " + sheetId + "; pwd = " + password);
 
 		String usersURI = getUserURI(domain);
-
-		//GetUserClient getuser = new GetUserClient(usersURI, userId, password);
 		
 		String[] args = {usersURI, userId, password};
 		RestClients getuser = new RestClients(args);
@@ -284,8 +273,6 @@ public class SpreadSheetResource implements RestSpreadsheets {
 		String usersURI = getUserURI(tokens[1]);
 
 		String uId = tokens[0];
-
-		//GetUserClient getuser = new GetUserClient(usersURI, uId, "");
 		
 		String[] args = {usersURI, uId, password};
 		RestClients getuser = new RestClients(args);
@@ -304,8 +291,6 @@ public class SpreadSheetResource implements RestSpreadsheets {
 				Log.info("Sheet does not exist.");
 				throw new WebApplicationException(Status.NOT_FOUND);
 			}
-
-			//getuser = new GetUserClient(getUserURI(domain), sheet.getOwner(), password);
 			
 			String[] args2 = {getUserURI(domain), sheet.getOwner(), password};
 			getuser = new RestClients(args2);
@@ -341,8 +326,6 @@ public class SpreadSheetResource implements RestSpreadsheets {
 		String usersURI = getUserURI(tokens[1]);
 
 		String uId = tokens[0];
-
-		//GetUserClient getuser = new GetUserClient(usersURI, uId, "");
 		
 		String[] args = {usersURI, uId, password};
 		RestClients getuser = new RestClients(args);
@@ -361,8 +344,6 @@ public class SpreadSheetResource implements RestSpreadsheets {
 				Log.info("Sheet does not exist.");
 				throw new WebApplicationException(Status.NOT_FOUND);
 			}
-
-			//getuser = new GetUserClient(getUserURI(domain), sheet.getOwner(), password);
 			
 			String[] args2 = {getUserURI(domain), sheet.getOwner(), password};
 			getuser = new RestClients(args2);

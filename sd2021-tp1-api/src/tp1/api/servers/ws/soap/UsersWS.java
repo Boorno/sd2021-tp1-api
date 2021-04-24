@@ -1,6 +1,5 @@
 package tp1.api.servers.ws.soap;
 
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.LinkedList;
