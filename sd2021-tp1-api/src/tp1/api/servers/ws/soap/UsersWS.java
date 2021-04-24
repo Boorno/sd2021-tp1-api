@@ -1,5 +1,6 @@
 package tp1.api.servers.ws.soap;
 
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -9,6 +10,7 @@ import java.util.logging.Logger;
 
 import jakarta.jws.WebService;
 import tp1.api.User;
+import tp1.api.clients.soap.DeleteUserSheetsClient;
 import tp1.api.service.soap.SoapUsers;
 import tp1.api.service.soap.UsersException;
 import tp1.discovery.Discovery;
@@ -144,6 +146,8 @@ public class UsersWS implements SoapUsers {
 	public User deleteUser(String userId, String password) throws UsersException {
 		Log.info("deleteUser : user = " + userId + "; pwd = " + password);
 		
+		System.out.println("\nDELETEDUSER\n");
+		
 		User user = null;
 		
 		synchronized (this) {
@@ -166,12 +170,14 @@ public class UsersWS implements SoapUsers {
 
 		}
 		
-//		String sheetsURI = getSheetURI();
-//
-//		DeleteUserSheetsClient deluser = new DeleteUserSheetsClient(sheetsURI, userId);
-//		
-//		deluser.deleteUserSheets();
+		String sheetsURI = getSheetURI();
 		
+		try {
+		(new DeleteUserSheetsClient(sheetsURI, userId)).deleteUserSheets();
+		} catch (Exception e) {
+			throw new UsersException("Cant delete sheets from user.");
+		}
+				
 		return user;
 	}
 

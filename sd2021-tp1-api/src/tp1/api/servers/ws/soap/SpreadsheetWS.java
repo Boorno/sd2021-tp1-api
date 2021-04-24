@@ -3,6 +3,7 @@ package tp1.api.servers.ws.soap;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -13,17 +14,18 @@ import jakarta.jws.WebService;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response.Status;
 import tp1.api.Spreadsheet;
-import tp1.api.clients.rest.GetUserClient;
 import tp1.api.clients.soap.ExistsUserClient;
 import tp1.api.clients.soap.GetUserClientSoap;
 import tp1.api.engine.SpreadSheetImpl;
 import tp1.api.service.soap.SheetsException;
 import tp1.api.service.soap.SoapSpreadsheets;
+import tp1.api.service.soap.SoapUsers;
 import tp1.api.service.soap.UsersException;
 import tp1.discovery.Discovery;
 import tp1.impl.engine.SpreadsheetEngineImpl;
 
 @WebService(serviceName = SoapSpreadsheets.NAME, targetNamespace = SoapSpreadsheets.NAMESPACE, endpointInterface = SoapSpreadsheets.INTERFACE)
+
 public class SpreadsheetWS implements SoapSpreadsheets {
 
 	private final Map<String, Spreadsheet> sheets;
@@ -57,15 +59,13 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 			try {
 				Thread.sleep(500);
 			} catch (InterruptedException e) {
-
 			}
 		}
 		return usersURI;
 	}
 
 	@Override
-	public String createSpreadsheet(Spreadsheet sheet, String password)
-			throws SheetsException, MalformedURLException, UsersException {
+	public String createSpreadsheet(Spreadsheet sheet, String password) throws SheetsException {
 		Log.info("createSheet : " + sheet + "; pwd = " + password);
 
 		if (sheet.getOwner() == null || sheet.getRows() <= 0 || sheet.getColumns() <= 0) {
@@ -75,11 +75,17 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 
 		String usersURI = getUserURI(domain);
 
-		(new GetUserClientSoap(usersURI, sheet.getOwner(), password)).getUser();
+		try {
+			(new GetUserClientSoap(usersURI, sheet.getOwner(), password)).getUser();
+		} catch (Exception e) {
+			throw new SheetsException("Cant get user.");
+		}
 
 		String sheetId = sheet.getOwner() + "-" + System.currentTimeMillis();
 		sheet.setSheetId(sheetId);
 		sheet.setSheetURL(serverURI + "/" + sheetId);
+		if (sheet.getSharedWith() == null)
+			sheet.setSharedWith(new HashSet<String>());
 		synchronized (this) {
 			if (sheets.containsKey(sheet.getSheetId())) {
 				Log.info("Sheet already exists.");
@@ -92,8 +98,7 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 	}
 
 	@Override
-	public void deleteSpreadsheet(String sheetId, String password)
-			throws SheetsException, MalformedURLException, UsersException {
+	public void deleteSpreadsheet(String sheetId, String password) throws SheetsException {
 		synchronized (this) {
 
 			Spreadsheet sheet = sheets.get(sheetId);
@@ -105,7 +110,11 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 
 			String usersURI = getUserURI(domain);
 
-			(new GetUserClientSoap(usersURI, sheet.getOwner(), password)).getUser();
+			try {
+				(new GetUserClientSoap(usersURI, sheet.getOwner(), password)).getUser();
+			} catch (Exception e) {
+				throw new SheetsException("Cant get user.");
+			}
 
 			sheets.remove(sheetId);
 		}
@@ -113,11 +122,15 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 	}
 
 	@Override
-	public Spreadsheet getSpreadsheet(String sheetId, String userId, String password)
-			throws SheetsException, MalformedURLException, UsersException {
+	public Spreadsheet getSpreadsheet(String sheetId, String userId, String password) throws SheetsException {
+
 		String usersURI = getUserURI(domain);
 
-		(new GetUserClientSoap(usersURI, userId, password)).getUser();
+		try {
+			(new GetUserClientSoap(usersURI, userId, password)).getUser();
+		} catch (Exception e) {
+			throw new SheetsException("Cant get user.");
+		}
 
 		Spreadsheet sheet = null;
 
@@ -138,16 +151,18 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 	}
 
 	@Override
-	public void shareSpreadsheet(String sheetId, String userId, String password)
-			throws SheetsException, MalformedURLException, UsersException {
+	public void shareSpreadsheet(String sheetId, String userId, String password) throws SheetsException {
 		String[] tokens = userId.split("@");
 
 		String usersURI = getUserURI(tokens[1]);
 
 		String uId = tokens[0];
 
-		(new ExistsUserClient(usersURI, uId)).existsUser();
-
+		try {
+			(new ExistsUserClient(usersURI, uId)).existsUser();
+		} catch (Exception e) {
+			throw new SheetsException("User does not exist.");
+		}
 		synchronized (this) {
 			Spreadsheet sheet = sheets.get(sheetId);
 
@@ -156,7 +171,11 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 				throw new SheetsException("Sheet does not exist.");
 			}
 
-			(new GetUserClientSoap(getUserURI(domain), sheet.getOwner(), password)).getUser();
+			try {
+				(new GetUserClientSoap(getUserURI(domain), sheet.getOwner(), password)).getUser();
+			} catch (Exception e) {
+				throw new SheetsException("Cant get user.");
+			}
 
 			Set<String> sW = sheet.getSharedWith();
 
@@ -170,15 +189,18 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 	}
 
 	@Override
-	public void unshareSpreadsheet(String sheetId, String userId, String password)
-			throws SheetsException, MalformedURLException, UsersException {
+	public void unshareSpreadsheet(String sheetId, String userId, String password) throws SheetsException {
 		String[] tokens = userId.split("@");
 
 		String usersURI = getUserURI(tokens[1]);
 
 		String uId = tokens[0];
 
-		(new ExistsUserClient(usersURI, uId)).existsUser();
+		try {
+			(new ExistsUserClient(usersURI, uId)).existsUser();
+		} catch (Exception e) {
+			throw new SheetsException("User does not exist.");
+		}
 
 		synchronized (this) {
 			Spreadsheet sheet = sheets.get(sheetId);
@@ -188,7 +210,11 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 				throw new SheetsException("Sheet does not exist.");
 			}
 
-			(new GetUserClientSoap(getUserURI(domain), sheet.getOwner(), password)).getUser();
+			try {
+				(new GetUserClientSoap(getUserURI(domain), sheet.getOwner(), password)).getUser();
+			} catch (Exception e) {
+				throw new SheetsException("Cant get user.");
+			}
 
 			Set<String> sW = sheet.getSharedWith();
 
@@ -204,9 +230,13 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 
 	@Override
 	public void updateCell(String sheetId, String cell, String rawValue, String userId, String password)
-			throws SheetsException, MalformedURLException, UsersException {
+			throws SheetsException {
 
-		(new GetUserClientSoap(getUserURI(domain), userId, password)).getUser();
+		try {
+			(new GetUserClientSoap(getUserURI(domain), userId, password)).getUser();
+		} catch (Exception e) {
+			throw new SheetsException("Cant get user.");
+		}
 
 		synchronized (this) {
 			Spreadsheet sheet = sheets.get(sheetId);
@@ -226,11 +256,15 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 	}
 
 	@Override
-	public String[][] getSpreadsheetValues(String sheetId, String userId, String password) throws SheetsException, MalformedURLException, UsersException {
-		(new GetUserClientSoap(getUserURI(domain), userId, password)).getUser();
-		
-		String [][] values = null;
-		
+	public String[][] getSpreadsheetValues(String sheetId, String userId, String password) throws SheetsException {
+		try {
+			(new GetUserClientSoap(getUserURI(domain), userId, password)).getUser();
+		} catch (Exception e) {
+			throw new SheetsException("Cant get user.");
+		}
+
+		String[][] values = null;
+
 		synchronized (this) {
 			Spreadsheet sheet = sheets.get(sheetId);
 
@@ -244,10 +278,10 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 			}
 
 			values = SpreadsheetEngineImpl.getInstance()
-					.computeSpreadsheetValues(new SpreadSheetImpl(sheet, userId + "@" + domain, false));
-	
+					.computeSpreadsheetValues(new SpreadSheetImpl(sheet, userId + "@" + domain));
+
 		}
-		
+
 		return values;
 	}
 
@@ -257,17 +291,18 @@ public class SpreadsheetWS implements SoapSpreadsheets {
 			sheets.entrySet().removeIf(e -> e.getValue().getOwner().equals(userId));
 		}
 	}
-	
+
 	@Override
 	public String[][] importRanges(String sheetId, String userId) throws SheetsException {
 		Spreadsheet sheet = sheets.get(sheetId);
-		if(sheet == null)
+		if (sheet == null)
 			throw new SheetsException("Sheet does not exist.");
-		
-		if(!sheet.getSharedWith().contains(userId))
+
+		if (!sheet.getSharedWith().contains(userId))
 			throw new SheetsException("User cant access sheet.");
-		
-		String[][] values = SpreadsheetEngineImpl.getInstance().computeSpreadsheetValues(new SpreadSheetImpl(sheet, sheet.getOwner()+"@"+domain, false));
+
+		String[][] values = SpreadsheetEngineImpl.getInstance()
+				.computeSpreadsheetValues(new SpreadSheetImpl(sheet, sheet.getOwner() + "@" + domain));
 
 		return values;
 	}

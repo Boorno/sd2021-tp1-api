@@ -41,7 +41,6 @@ public interface AbstractSpreadsheet {
 	 * @param range - the range of cells covered by the formula
 	 * @return the computed values.
 	 * @throws SheetsException 
-	 * @throws MalformedURLException 
 	 */
-	String[][] getRangeValues(String sheetURL, String range);
+	String[][] getRangeValues(String sheetURL, String range) throws SheetsException;
 }

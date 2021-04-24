@@ -1,5 +1,6 @@
 package tp1.api.service.soap;
 
+import java.net.MalformedURLException;
 import java.util.List;
 
 import jakarta.jws.WebMethod;
@@ -42,6 +43,7 @@ public interface SoapUsers {
 	 * @param nauserId the userId of the user
 	 * @param password password of the user
 	 * @throws UsersException otherwise
+	 * @throws MalformedURLException 
 	 */
 	@WebMethod
 	User deleteUser(String userId, String password) throws UsersException;

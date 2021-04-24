@@ -22,7 +22,7 @@ public class SheetsServer {
 
 	public static final int PORT = 8080;
 	public static final String SERVICE = "sheets";
-	public static final String SOAP_SHEETS_PATH = "/soap/sheets";
+	public static final String SOAP_SHEETS_PATH = "/soap/spreadsheets";
 
 	public static void main(String[] args) {
 		try {
@@ -48,7 +48,7 @@ public class SheetsServer {
 
 			//More code can be executed here...
 		} catch( Exception e) {
-			Log.severe(e.getMessage());
+			System.out.println(e.getMessage());
 		}
 	}
 

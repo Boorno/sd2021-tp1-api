@@ -37,13 +37,13 @@ public class UsersServer {
 			
 			Discovery discovery = new Discovery( new InetSocketAddress("226.226.226.226", 2266), domain+":"+SERVICE, serverURI);
 			discovery.start();
-			
+						
 			Endpoint soapUsersEndpoint = Endpoint.create(new UsersWS(domain, discovery));
-			
+						
 			soapUsersEndpoint.publish(server.createContext(SOAP_USERS_PATH));
-			
+		
 			server.start();
-
+			
 			Log.info(String.format("%s Server ready @ %s\n",  SERVICE, serverURI));
 
 			//More code can be executed here...

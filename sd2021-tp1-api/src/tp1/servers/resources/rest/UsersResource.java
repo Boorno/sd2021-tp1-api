@@ -12,8 +12,7 @@ import jakarta.inject.Singleton;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response.Status;
 import tp1.api.User;
-import tp1.api.clients.rest.DeleteUserSheetsClient;
-import tp1.api.clients.rest.GetUserClient;
+import tp1.api.clients.rest.RestClients;
 import tp1.api.service.rest.RestUsers;
 import tp1.discovery.Discovery;
 
@@ -162,7 +161,10 @@ public class UsersResource implements RestUsers {
 		
 		String sheetsURI = getSheetURI();
 
-		DeleteUserSheetsClient deluser = new DeleteUserSheetsClient(sheetsURI, userId);
+		//DeleteUserSheetsClient deluser = new DeleteUserSheetsClient(sheetsURI, userId);
+		
+		String[] args = {sheetsURI, userId};
+		RestClients deluser = new RestClients(args);
 		
 		deluser.deleteUserSheets();
 		

@@ -13,17 +13,17 @@ import tp1.api.service.soap.SoapSpreadsheets;
 
 public class DeleteUserSheetsClient {
 
-	public final static String SHEETS_WSDL = "/sheets/?wsdl";
+	public final static String SHEETS_WSDL = "/spreadsheets/?wsdl";
 	
 	public final static int MAX_RETRIES = 3;
 	public final static long RETRY_PERIOD = 1000;
-	public final static int CONNECTION_TIMEOUT = 1000;
+	public final static int CONNECTION_TIMEOUT = 10000;
 	public final static int REPLY_TIMEOUT = 600;
 	
 	private String serverUrl;
 	private String userId;
 	
-	public DeleteUserSheetsClient(String serverUrl, String userId, String password) {
+	public DeleteUserSheetsClient(String serverUrl, String userId) {
 		this.serverUrl = serverUrl;
 		this.userId = userId;
 	}

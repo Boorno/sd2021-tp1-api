@@ -1,6 +1,7 @@
 package tp1.impl.engine;
 
 
+import java.net.MalformedURLException;
 import java.util.regex.Pattern;
 
 import com.gembox.spreadsheet.ExcelCell;
@@ -10,6 +11,7 @@ import com.gembox.spreadsheet.SpreadsheetInfo;
 
 import tp1.api.engine.AbstractSpreadsheet;
 import tp1.api.engine.SpreadsheetEngine;
+import tp1.api.service.soap.SheetsException;
 import tp1.util.CellRange;
 
 public class SpreadsheetEngineImpl implements SpreadsheetEngine {
@@ -23,7 +25,7 @@ public class SpreadsheetEngineImpl implements SpreadsheetEngine {
 	}
 	
 	
-	public String[][] computeSpreadsheetValues(AbstractSpreadsheet sheet) {
+	public String[][] computeSpreadsheetValues(AbstractSpreadsheet sheet) throws SheetsException {
 		ExcelFile workbook = new ExcelFile();
 		ExcelWorksheet worksheet = workbook.addWorksheet(sheet.sheetId());
 
@@ -54,7 +56,7 @@ public class SpreadsheetEngineImpl implements SpreadsheetEngine {
 	
 	enum CellType { EMPTY, BOOLEAN, NUMBER, IMPORTRANGE, TEXT, FORMULA };
 	
-	static void setCell( AbstractSpreadsheet sheet, ExcelWorksheet worksheet, ExcelCell cell, String rawVal ) {
+	static void setCell( AbstractSpreadsheet sheet, ExcelWorksheet worksheet, ExcelCell cell, String rawVal ) throws SheetsException {
 		CellType type = parseRawValue( rawVal );
 		
 		switch( type ) {
@@ -87,7 +89,7 @@ public class SpreadsheetEngineImpl implements SpreadsheetEngine {
 	}
 	
 	
-	private static void applyRange(ExcelWorksheet worksheet, ExcelCell cell0, CellRange range, String[][] values) {
+	private static void applyRange(ExcelWorksheet worksheet, ExcelCell cell0, CellRange range, String[][] values) throws SheetsException {
 		int row0 = cell0.getRow().getIndex(), col0 = cell0.getColumn().getIndex();
 
 		for (int r = 0; r < range.rows(); r++)

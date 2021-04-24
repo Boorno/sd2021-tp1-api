@@ -2,9 +2,9 @@ package tp1.api.service.soap;
 
 import java.net.MalformedURLException;
 
+import jakarta.jws.WebMethod;
 import jakarta.jws.WebService;
 import tp1.api.Spreadsheet;
-import tp1.api.User;
 
 @WebService(serviceName=SoapSpreadsheets.NAME, targetNamespace=SoapSpreadsheets.NAMESPACE, endpointInterface=SoapSpreadsheets.INTERFACE)
 public interface SoapSpreadsheets {
@@ -18,11 +18,10 @@ public interface SoapSpreadsheets {
 	 * @param sheet - the spreadsheet to be created.
 	 * @param password - the password of the owner of the spreadsheet.
 	 * 
-	 * @throws SheetsException otherwise
-	 * @throws UsersException 
-	 * @throws MalformedURLException 
+	 * @throws SheetsException otherwise 
 	 */
-	String createSpreadsheet(Spreadsheet sheet, String password ) throws SheetsException, MalformedURLException, UsersException;
+	@WebMethod
+	String createSpreadsheet(Spreadsheet sheet, String password ) throws SheetsException;
 
 	
 	/**
@@ -31,10 +30,9 @@ public interface SoapSpreadsheets {
 	 * @param password - the password of the owner of the spreadsheet.
 	 * 
 	 * @throws SheetsException otherwise
-	 * @throws UsersException 
-	 * @throws MalformedURLException 
 	 */
-	void deleteSpreadsheet(String sheetId, String password) throws SheetsException, MalformedURLException, UsersException;
+	@WebMethod
+	void deleteSpreadsheet(String sheetId, String password) throws SheetsException;
 
 	/**
 	 * Retrieve a spreadsheet.
@@ -44,10 +42,9 @@ public interface SoapSpreadsheets {
 	 * @param password - The password of the user performing the operation.
 	 * 
 	 * @throws SheetsException otherwise
-	 * @throws MalformedURLException 
-	 * @throws UsersException 
 	 */
-	Spreadsheet getSpreadsheet(String sheetId , String userId, String password) throws SheetsException, MalformedURLException, UsersException;
+	@WebMethod
+	Spreadsheet getSpreadsheet(String sheetId , String userId, String password) throws SheetsException;
 		
 	
 	/**
@@ -59,10 +56,9 @@ public interface SoapSpreadsheets {
 	 * @param password - The password of the owner of the spreadsheet.
 	 * 
 	 * @throws SheetsException otherwise
-	 * @throws UsersException 
-	 * @throws MalformedURLException 
 	 */
-	void shareSpreadsheet( String sheetId, String userId, String password) throws SheetsException, MalformedURLException, UsersException;
+	@WebMethod
+	void shareSpreadsheet( String sheetId, String userId, String password) throws SheetsException;
 
 	
 	/**
@@ -73,10 +69,9 @@ public interface SoapSpreadsheets {
 	 * @param password - The password of the owner of the spreadsheet.
 	 * 
 	 * @throws SheetsException otherwise
-	 * @throws UsersException 
-	 * @throws MalformedURLException 
 	 */
-	void unshareSpreadsheet( String sheetId, String userId, String password) throws SheetsException, MalformedURLException, UsersException;
+	@WebMethod
+	void unshareSpreadsheet( String sheetId, String userId, String password) throws SheetsException;
 
 	
 	/**
@@ -89,10 +84,9 @@ public interface SoapSpreadsheets {
 	 * @param password - the password of the owner of the spreadsheet
 	 * 
 	 * @throws SheetsException otherwise
-	 * @throws UsersException 
-	 * @throws MalformedURLException 
 	 **/
-	void updateCell( String sheetId, String cell, String rawValue, String userId, String password) throws SheetsException, MalformedURLException, UsersException;
+	@WebMethod
+	void updateCell( String sheetId, String cell, String rawValue, String userId, String password) throws SheetsException;
 
 	
 	/**
@@ -101,15 +95,14 @@ public interface SoapSpreadsheets {
 	 * @param sheetId - the spreadsheet whose values are being retrieved.
 	 * @param password - the password of the owner of the spreadsheet
 	 * 
-	 * @throws SheetsException otherwise
-	 * @throws UsersException 
-	 * @throws MalformedURLException 
+	 * @throws SheetsException otherwise 
 	 */
-	String[][] getSpreadsheetValues(String sheetId, String userId, String password) throws SheetsException, MalformedURLException, UsersException;
+	@WebMethod
+	String[][] getSpreadsheetValues(String sheetId, String userId, String password) throws SheetsException;
 
-
+	@WebMethod
 	void deletedUser(String userId);
 
-
+	@WebMethod
 	String[][] importRanges(String sheetId, String userId) throws SheetsException;
 }

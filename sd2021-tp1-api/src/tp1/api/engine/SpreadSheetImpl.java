@@ -1,20 +1,22 @@
 package tp1.api.engine;
 
+import java.net.MalformedURLException;
+
 import tp1.api.Spreadsheet;
-import tp1.api.clients.rest.GetValuesClient;
+import tp1.api.clients.rest.RestClients;
 import tp1.api.clients.soap.GetValuesClientSoap;
+import tp1.api.service.rest.RestSpreadsheets;
+import tp1.api.service.soap.SheetsException;
 import tp1.util.CellRange;
 
 public class SpreadSheetImpl implements AbstractSpreadsheet{
 	
 	private Spreadsheet sheet;
 	private String userId;
-	private boolean rest;
 	
-	public SpreadSheetImpl(Spreadsheet sheet, String userId, boolean rest) {
+	public SpreadSheetImpl(Spreadsheet sheet, String userId) {
 		this.sheet = sheet;
 		this.userId = userId;
-		this.rest = rest;
 	}
 	
 	@Override
@@ -42,19 +44,29 @@ public class SpreadSheetImpl implements AbstractSpreadsheet{
 	}
 
 	@Override
-	public String[][] getRangeValues(String sheetURL, String range) {
+	public String[][] getRangeValues(String sheetURL, String range) throws SheetsException {
 		CellRange c = new CellRange(range);
 		
 		String[][] values = null;
 		
+		String[] sheetURLinfo = sheetURL.split("/");
+		
+		System.out.println(sheetURLinfo[3]);
+		
+		boolean rest = sheetURLinfo[3].equals("rest");
+		
 		if(rest) {
-			GetValuesClient gr = new GetValuesClient(sheetURL, userId);
+			String[] sheetInfo = sheetURL.split(RestSpreadsheets.PATH+"/");
+			//GetValuesClient gr = new GetValuesClient(sheetURL, sheetInfo[0], sheetInfo[1], userId);
+			String[] args = {sheetURL, sheetInfo[0], sheetInfo[1], userId};
+			RestClients gr = new RestClients(args);
 			values = gr.getValues();
 		} else {
 			GetValuesClientSoap gs = new GetValuesClientSoap(sheetURL, userId);
 			try {
-				values = gs.getValues();
-			} catch(Exception e){
+			values = gs.getValues();
+			} catch(Exception e) {
+				throw new SheetsException("Cant access values.");
 			}
 		}
 						

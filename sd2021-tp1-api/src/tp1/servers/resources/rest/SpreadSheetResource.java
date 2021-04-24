@@ -1,9 +1,8 @@
 package tp1.servers.resources.rest;
 
-import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -12,10 +11,10 @@ import jakarta.inject.Singleton;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response.Status;
 import tp1.api.Spreadsheet;
-import tp1.api.clients.rest.GetUserClient;
-import tp1.api.engine.AbstractSpreadsheet;
+import tp1.api.clients.rest.RestClients;
 import tp1.api.engine.SpreadSheetImpl;
 import tp1.api.service.rest.RestSpreadsheets;
+import tp1.api.service.soap.SheetsException;
 import tp1.discovery.Discovery;
 import tp1.impl.engine.SpreadsheetEngineImpl;
 
@@ -68,8 +67,11 @@ public class SpreadSheetResource implements RestSpreadsheets {
 		}
 
 		String usersURI = getUserURI(domain);
-
-		GetUserClient getuser = new GetUserClient(usersURI, sheet.getOwner(), password);
+		
+//		GetUserClient getuser = new GetUserClient(usersURI, sheet.getOwner(), password);
+		
+		String[] args = {usersURI, sheet.getOwner(), password};
+		RestClients getuser = new RestClients(args);
 
 		int responseStatus = getuser.getUser();
 
@@ -116,7 +118,10 @@ public class SpreadSheetResource implements RestSpreadsheets {
 
 			String usersURI = getUserURI(domain);
 
-			GetUserClient getuser = new GetUserClient(usersURI, sheet.getOwner(), password);
+			//GetUserClient getuser = new GetUserClient(usersURI, sheet.getOwner(), password);
+			
+			String[] args = {usersURI, sheet.getOwner(), password};
+			RestClients getuser = new RestClients(args);
 
 			int responseStatus = getuser.getUser();
 
@@ -136,7 +141,10 @@ public class SpreadSheetResource implements RestSpreadsheets {
 
 		String usersURI = getUserURI(domain);
 
-		GetUserClient getuser = new GetUserClient(usersURI, userId, password);
+		//GetUserClient getuser = new GetUserClient(usersURI, userId, password);
+		
+		String[] args = {usersURI, userId, password};
+		RestClients getuser = new RestClients(args);
 
 		int responseStatus = getuser.getUser();
 
@@ -178,7 +186,10 @@ public class SpreadSheetResource implements RestSpreadsheets {
 	public String[][] getSpreadsheetValues(String sheetId, String userId, String password) {
 		String usersURI = getUserURI(domain);
 
-		GetUserClient getuser = new GetUserClient(usersURI, userId, password);
+		//GetUserClient getuser = new GetUserClient(usersURI, userId, password);
+		
+		String[] args = {usersURI, userId, password};
+		RestClients getuser = new RestClients(args);
 
 		int responseStatus = getuser.getUser();
 
@@ -207,8 +218,13 @@ public class SpreadSheetResource implements RestSpreadsheets {
 					throw new WebApplicationException(Status.FORBIDDEN);
 				}
 
-				String[][] values = SpreadsheetEngineImpl.getInstance().computeSpreadsheetValues(new SpreadSheetImpl(sheet, userId + "@" + domain, true));
-
+				String[][] values = null;
+				try {
+					values = SpreadsheetEngineImpl.getInstance().computeSpreadsheetValues(new SpreadSheetImpl(sheet, userId + "@" + domain));
+				} catch (SheetsException e) {
+					//erro soap
+					System.out.println("\nERRO?\n");
+				}
 				return values;
 			}
 		} else {
@@ -224,7 +240,10 @@ public class SpreadSheetResource implements RestSpreadsheets {
 
 		String usersURI = getUserURI(domain);
 
-		GetUserClient getuser = new GetUserClient(usersURI, userId, password);
+		//GetUserClient getuser = new GetUserClient(usersURI, userId, password);
+		
+		String[] args = {usersURI, userId, password};
+		RestClients getuser = new RestClients(args);
 
 		int responseStatus = getuser.getUser();
 
@@ -266,7 +285,10 @@ public class SpreadSheetResource implements RestSpreadsheets {
 
 		String uId = tokens[0];
 
-		GetUserClient getuser = new GetUserClient(usersURI, uId, "");
+		//GetUserClient getuser = new GetUserClient(usersURI, uId, "");
+		
+		String[] args = {usersURI, uId, password};
+		RestClients getuser = new RestClients(args);
 
 		int responseStatus = getuser.getUser();
 
@@ -283,7 +305,10 @@ public class SpreadSheetResource implements RestSpreadsheets {
 				throw new WebApplicationException(Status.NOT_FOUND);
 			}
 
-			getuser = new GetUserClient(getUserURI(domain), sheet.getOwner(), password);
+			//getuser = new GetUserClient(getUserURI(domain), sheet.getOwner(), password);
+			
+			String[] args2 = {getUserURI(domain), sheet.getOwner(), password};
+			getuser = new RestClients(args2);
 
 			responseStatus = getuser.getUser();
 
@@ -317,7 +342,10 @@ public class SpreadSheetResource implements RestSpreadsheets {
 
 		String uId = tokens[0];
 
-		GetUserClient getuser = new GetUserClient(usersURI, uId, "");
+		//GetUserClient getuser = new GetUserClient(usersURI, uId, "");
+		
+		String[] args = {usersURI, uId, password};
+		RestClients getuser = new RestClients(args);
 
 		int responseStatus = getuser.getUser();
 
@@ -334,7 +362,10 @@ public class SpreadSheetResource implements RestSpreadsheets {
 				throw new WebApplicationException(Status.NOT_FOUND);
 			}
 
-			getuser = new GetUserClient(getUserURI(domain), sheet.getOwner(), password);
+			//getuser = new GetUserClient(getUserURI(domain), sheet.getOwner(), password);
+			
+			String[] args2 = {getUserURI(domain), sheet.getOwner(), password};
+			getuser = new RestClients(args2);
 
 			responseStatus = getuser.getUser();
 
@@ -371,11 +402,14 @@ public class SpreadSheetResource implements RestSpreadsheets {
 		if(sheet == null)
 			throw new WebApplicationException(Status.NOT_FOUND);
 		
-		if(!sheet.getSharedWith().contains(userId))
+		if(!sheet.getOwner().equals(userId) && !sheet.getSharedWith().contains(userId))
 			throw new WebApplicationException(Status.FORBIDDEN);
 		
-		String[][] values = SpreadsheetEngineImpl.getInstance().computeSpreadsheetValues(new SpreadSheetImpl(sheet, sheet.getOwner()+"@"+domain, true));
-
+		String[][] values = null;
+		try {
+			values = SpreadsheetEngineImpl.getInstance().computeSpreadsheetValues(new SpreadSheetImpl(sheet, sheet.getOwner() + "@" + domain));
+		} catch (SheetsException e) {
+		}
 		return values;
 	}
 

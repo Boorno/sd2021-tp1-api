@@ -28,11 +28,11 @@ import tp1.api.service.soap.SoapSpreadsheets;
 import tp1.servers.soap.SheetsServer;
 
 public class GetValuesClientSoap {
-	public final static String SHEETS_WSDL = "/sheets/?wsdl";
+	public final static String SHEETS_WSDL = "/spreadsheets/?wsdl";
 
 	public final static int MAX_RETRIES = 3;
 	public final static long RETRY_PERIOD = 1000;
-	public final static int CONNECTION_TIMEOUT = 1000;
+	public final static int CONNECTION_TIMEOUT = 10000;
 	public final static int REPLY_TIMEOUT = 600;
 
 	private static Map<String, String[][]> cache = new HashMap<String, String[][]>();
@@ -47,6 +47,8 @@ public class GetValuesClientSoap {
 		String[] sheetInfo = sheetURL.split("/" + SheetsServer.SERVICE + "/");
 		this.serverUrl = sheetInfo[0];
 		this.sheetId = sheetInfo[1];
+		System.out.println("\n"+this.serverUrl);
+		System.out.println("\n"+this.sheetId);
 		this.userId = userId;
 	}
 

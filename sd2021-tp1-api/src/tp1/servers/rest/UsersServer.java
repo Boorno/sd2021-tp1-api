@@ -26,6 +26,7 @@ public class UsersServer {
 	public static void main(String[] args) {
 		try {
 		String ip = InetAddress.getLocalHost().getHostAddress();
+		
 		String serverURI = String.format("http://%s:%s/rest", ip, PORT);
 		
 		String domain = args[0];
