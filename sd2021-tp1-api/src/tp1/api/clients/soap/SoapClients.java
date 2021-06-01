@@ -60,8 +60,7 @@ public class SoapClients {
 		
 	}
 	
-	public void deleteUserSheets() throws MalformedURLException {
-
+	private SoapSpreadsheets initializeSheetsServer() throws MalformedURLException {
 		SoapSpreadsheets sheets = null;
 		
 		try {
@@ -77,6 +76,32 @@ public class SoapClients {
 		((BindingProvider) sheets).getRequestContext().put(BindingProviderProperties.CONNECT_TIMEOUT, CONNECTION_TIMEOUT);
 		((BindingProvider) sheets).getRequestContext().put(BindingProviderProperties.REQUEST_TIMEOUT, REPLY_TIMEOUT);
 	
+		return sheets;
+	}
+	
+	private SoapUsers initializeUsersServer() throws MalformedURLException{
+		SoapUsers users = null;
+		
+		try {
+			QName QNAME = new QName(SoapUsers.NAMESPACE, SoapUsers.NAME);
+			Service service = Service.create( new URL(serverURL + USERS_WSDL), QNAME );
+			users = service.getPort( tp1.api.service.soap.SoapUsers.class );
+		} catch ( WebServiceException e) {
+			System.err.println("Could not contact the server: " + e.getMessage());
+			System.exit(1);
+		}
+		
+		//Set timeouts for executing operations
+		((BindingProvider) users).getRequestContext().put(BindingProviderProperties.CONNECT_TIMEOUT, CONNECTION_TIMEOUT);
+		((BindingProvider) users).getRequestContext().put(BindingProviderProperties.REQUEST_TIMEOUT, REPLY_TIMEOUT);
+	
+		return users;
+	}
+	
+	public void deleteUserSheets() throws MalformedURLException {
+		
+		SoapSpreadsheets sheets = initializeSheetsServer();
+		
 		System.out.println("Sending request to server.");
 
 		short retries = 0;
@@ -101,21 +126,8 @@ public class SoapClients {
 	
 	public void existsUser() throws MalformedURLException, UsersException {
 
-		SoapUsers users = null;
+		SoapUsers users = initializeUsersServer();
 		
-		try {
-			QName QNAME = new QName(SoapUsers.NAMESPACE, SoapUsers.NAME);
-			Service service = Service.create( new URL(serverURL + USERS_WSDL), QNAME );
-			users = service.getPort( tp1.api.service.soap.SoapUsers.class );
-		} catch ( WebServiceException e) {
-			System.err.println("Could not contact the server: " + e.getMessage());
-			System.exit(1);
-		}
-		
-		//Set timeouts for executing operations
-		((BindingProvider) users).getRequestContext().put(BindingProviderProperties.CONNECT_TIMEOUT, CONNECTION_TIMEOUT);
-		((BindingProvider) users).getRequestContext().put(BindingProviderProperties.REQUEST_TIMEOUT, REPLY_TIMEOUT);
-	
 		System.out.println("Sending request to server.");
 
 		short retries = 0;
@@ -142,21 +154,8 @@ public class SoapClients {
 	
 	public void getUser() throws MalformedURLException, UsersException {
 
-		SoapUsers users = null;
+		SoapUsers users = initializeUsersServer();
 		
-		try {
-			QName QNAME = new QName(SoapUsers.NAMESPACE, SoapUsers.NAME);
-			Service service = Service.create( new URL(serverURL + USERS_WSDL), QNAME );
-			users = service.getPort( tp1.api.service.soap.SoapUsers.class );
-		} catch ( WebServiceException e) {
-			System.err.println("Could not contact the server: " + e.getMessage());
-			System.exit(1);
-		}
-		
-		//Set timeouts for executing operations
-		((BindingProvider) users).getRequestContext().put(BindingProviderProperties.CONNECT_TIMEOUT, CONNECTION_TIMEOUT);
-		((BindingProvider) users).getRequestContext().put(BindingProviderProperties.REQUEST_TIMEOUT, REPLY_TIMEOUT);
-	
 		System.out.println("Sending request to server.");
 
 		short retries = 0;
@@ -183,22 +182,8 @@ public class SoapClients {
 	
 	public String[][] getValues() throws SheetsException, MalformedURLException {
 
-		SoapSpreadsheets sheets = null;
-
-		try {
-			QName QNAME = new QName(SoapSpreadsheets.NAMESPACE, SoapSpreadsheets.NAME);
-			Service service = Service.create(new URL(serverURL + SHEETS_WSDL), QNAME);
-			sheets = service.getPort(tp1.api.service.soap.SoapSpreadsheets.class);
-		} catch (WebServiceException e) {
-			System.err.println("Could not contact the server: " + e.getMessage());
-			System.exit(1);
-		}
-
-		// Set timeouts for executing operations
-		((BindingProvider) sheets).getRequestContext().put(BindingProviderProperties.CONNECT_TIMEOUT,
-				CONNECTION_TIMEOUT);
-		((BindingProvider) sheets).getRequestContext().put(BindingProviderProperties.REQUEST_TIMEOUT, REPLY_TIMEOUT);
-
+		SoapSpreadsheets sheets = initializeSheetsServer();
+		
 		System.out.println("Sending request to server.");
 
 		short retries = 0;
